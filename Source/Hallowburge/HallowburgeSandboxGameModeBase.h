@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "HallowburgeSandboxGameModeBase.generated.h"
 
+class AHallowburgePlayerCharacter;
 /**
  * 
  */
@@ -13,5 +14,9 @@ UCLASS()
 class HALLOWBURGE_API AHallowburgeSandboxGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	AHallowburgeSandboxGameModeBase();
+
+	virtual void BeginPlay() override;
 };

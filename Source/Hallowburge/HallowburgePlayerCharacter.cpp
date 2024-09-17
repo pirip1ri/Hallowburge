@@ -2,6 +2,8 @@
 
 
 #include "HallowburgePlayerCharacter.h"
+#include "HallowburgePlayerController.h"
+#include "HallowburgeSandboxGameModeBase.h"
 
 // Sets default values
 AHallowburgePlayerCharacter::AHallowburgePlayerCharacter()
@@ -9,6 +11,21 @@ AHallowburgePlayerCharacter::AHallowburgePlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    // Create a Spring Arm component and attach it to the character's root component
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(RootComponent);
+    SpringArm->TargetArmLength = 300.0f;
+    SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+    // Create a Camera component and attach it to the Spring Arm
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+    Camera->bUsePawnControlRotation = true;
+
+    // Disable character rotation by controller pitch
+    bUseControllerRotationYaw = true;
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationRoll = false;
 }
 
 // Called when the game starts or when spawned
@@ -16,6 +33,15 @@ void AHallowburgePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    if (GetCharacterMovement())
+    {
+        MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+    }
+
+    // Allows the character to move easily in the air while jumping
+    GetCharacterMovement()->AirControl = 0.8f;
+
+    GameModeRef = Cast<AHallowburgeSandboxGameModeBase>(GetWorld()->GetAuthGameMode());
 }
 
 // Called every frame
