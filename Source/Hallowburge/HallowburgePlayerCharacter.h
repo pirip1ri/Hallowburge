@@ -13,9 +13,13 @@ UCLASS()
 class HALLOWBURGE_API AHallowburgePlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
-	// Objects //
-	float MaxWalkSpeed = 0.0f;
 
+
+
+	// Objects // 
+
+protected:
+	float MaxWalkSpeed = 600.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
 
@@ -23,6 +27,14 @@ class HALLOWBURGE_API AHallowburgePlayerCharacter : public ACharacter
 	UCameraComponent* Camera;
 
 	AHallowburgeSandboxGameModeBase* GameModeRef;
+
+	// Objects - Animation stuff //
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	float CharacterSpeed;
+
+
+
 
 	// Functions //
 public:

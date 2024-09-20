@@ -49,6 +49,9 @@ void AHallowburgePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    // Calculate and update CharacterSpeed from movement - for animation
+    CharacterSpeed = GetVelocity().Size(); // Total velocity magnitude
+
 }
 
 // Called to bind functionality to input

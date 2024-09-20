@@ -72,3 +72,32 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+
+# Unreal Engine
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+*.tmp
+*.log
+*.obj
+*.pdb
+*.exe
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.pri
+*.sdf
+*.opensdf
+*.VC.db
+.vs/
+
+# Ignore third-person pack assets
+Content/__ExternalObjects__/ThirdPerson/
+Content/__ExternalActors__/ThirdPerson/
+Content/ThirdPerson/
+Content/LevelPrototyping/
+Content/Characters/Mannequin_UE4/
+Content/Characters/Mannequins/

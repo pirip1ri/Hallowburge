@@ -29,9 +29,19 @@ public:
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 
 protected:
-	EPlayerPawnController* PlayerCharacterController;
+	EPlayerPawnController* PlayerPawnController;
 	AHallowburgePlayerCharacter* PlayerCharacter;
 
+	float RunSpeed = 600.0f;
+	float SprintSpeed = 900.0f;
+	float MaxWalkSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	bool bCanDash;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	float DashCooldown;
+	float DashDistance = 1800.0f;
+	FTimerHandle DashCooldownTimerHandle;
 
 	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
 	UPROPERTY(EditAnywhere, Category = "Look")
@@ -41,8 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Look")
 	float BaseLookRightRate = 90.0f;
 
-	float MaxWalkSpeed;
-
+	// For Animations
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* DashMontage;
 
 
 
@@ -59,12 +70,15 @@ protected:
 	void MoveForward(const FInputActionValue& InputAction);
 
 	void JumpFunction();
-	void JumpFunctionEnded();
+	void JumpFunctionEnd();
 	void CrouchStart();
 	void CrouchEnd();
+	void SprintStart();
+	void SprintEnd();
 
 	// Button for entering/leaving possession
 	void PossessionFunction();
+	void PossessionFunctionEnd();
 	// Button for character's ability
 	void Button1Action();
 	// Additional button for anything else
@@ -93,6 +107,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SprintAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* PossessionAction;

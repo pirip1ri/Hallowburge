@@ -51,9 +51,11 @@ void AHallowburgePlayerController::SetupInputComponent()
         EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::MoveForward);
 
         EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::JumpFunction);
-        EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::JumpFunctionEnded);
+        EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::JumpFunctionEnd);
         EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::CrouchStart);
         EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::CrouchEnd);
+        EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::SprintStart);
+        EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::SprintEnd);
 
         EnhancedInputComponent->BindAction(PossessionAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::PossessionFunction);
         EnhancedInputComponent->BindAction(Ability1Action, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::Button1Action);
@@ -113,7 +115,7 @@ void AHallowburgePlayerController::JumpFunction()
     }
 }
 
-void AHallowburgePlayerController::JumpFunctionEnded()
+void AHallowburgePlayerController::JumpFunctionEnd()
 {
     if (PlayerCharacter)
     {
@@ -131,9 +133,62 @@ void AHallowburgePlayerController::CrouchEnd()
     PlayerCharacter->UnCrouch();
 }
 
+void AHallowburgePlayerController::SprintStart()
+{
+    PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+}
+
+void AHallowburgePlayerController::SprintEnd()
+{
+    PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+}
+
 void AHallowburgePlayerController::PossessionFunction()
 {
-    // Possession/dash
+    if (bCanDash)
+    {
+        // Perform dash logic
+        FVector ForwardDir = PlayerCharacter->GetActorRotation().Vector();
+        PlayerCharacter->LaunchCharacter(ForwardDir * DashDistance, true, true);
+
+        if (DashMontage)
+        {
+            PlayerCharacter->PlayAnimMontage(DashMontage, 1, NAME_None);
+        }
+
+        // Set bCanDash to false to prevent further dashes
+        bCanDash = false;
+
+        // Start the cooldown timer
+        GetWorld()->GetTimerManager().SetTimer(DashCooldownTimerHandle, this, &AHallowburgePlayerController::PossessionFunctionEnd, DashCooldown, false);
+
+    }
+
+
+    //// Get the player's controller (assumed to be your custom player controller)
+    //APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+
+    //// Get the control rotation (camera direction)
+    //FRotator CameraRotation = PlayerController->GetControlRotation();
+
+    //// Only use the yaw (horizontal) component of the camera's rotation
+    //FRotator YawRotation(0, CameraRotation.Yaw, 0);
+
+    //// Get the forward direction of the camera
+    //FVector ForwardDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+    //// Perform the dash in the camera's forward direction
+    //PlayerCharacter->LaunchCharacter(ForwardDir * DashDistance, true, true);
+
+    //if (DashMontage)
+    //{
+    //    PlayerCharacter->PlayAnimMontage(DashMontage, 1, NAME_None);
+    //}
+}
+
+void AHallowburgePlayerController::PossessionFunctionEnd()
+{
+    bCanDash = true;
 }
 
 void AHallowburgePlayerController::Button1Action()
