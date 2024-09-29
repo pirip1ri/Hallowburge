@@ -4,7 +4,8 @@
 #include "HallowburgePlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "InputMappingContext.h" // Add this line
+#include "GameFramework/CharacterMovementComponent.h"
+#include "InputMappingContext.h"
 #include <Kismet/GameplayStatics.h>
 
 void AHallowburgePlayerController::BeginPlay()
@@ -38,6 +39,31 @@ void AHallowburgePlayerController::BeginPlay()
     }
 }
 
+void AHallowburgePlayerController::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // Handle Jetpack
+    switch (JetpackState)
+    {
+    case EJetpackState::Active:
+        ConsumeJetpackFuel(DeltaTime);
+        break;
+
+    case EJetpackState::Regenerating:
+        RefuelJetpack(DeltaTime);
+        break;
+    case EJetpackState::Empty:
+        JetpackDeactivate();
+        break;
+    case EJetpackState::Idle:
+    default:
+        // Do nothing when idle
+        break;
+    }
+    UE_LOG(LogTemp, Display, TEXT("Current amount of fuel: %f"), CurrentJetpackFuel);
+}
+
 void AHallowburgePlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
@@ -52,12 +78,10 @@ void AHallowburgePlayerController::SetupInputComponent()
 
         EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::JumpFunction);
         EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::JumpFunctionEnd);
-        EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::CrouchStart);
-        EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::CrouchEnd);
         EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::SprintStart);
         EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AHallowburgePlayerController::SprintEnd);
 
-        EnhancedInputComponent->BindAction(PossessionAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::PossessionFunction);
+        EnhancedInputComponent->BindAction(PossessionAction, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::PossessionAbilityCheck);
         EnhancedInputComponent->BindAction(Ability1Action, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::Button1Action);
         EnhancedInputComponent->BindAction(Ability2Action, ETriggerEvent::Triggered, this, &AHallowburgePlayerController::Button2Action);
     }
@@ -111,7 +135,30 @@ void AHallowburgePlayerController::JumpFunction()
 {
     if (PlayerCharacter)
     {
-        PlayerCharacter->Jump();
+        if (PlayerCharacter->GetCharacterMovement()->IsFalling())
+        {
+            switch (JetpackState)
+            {
+            case EJetpackState::Empty:
+                // Jetpack is empty, fallback to normal jump behavior
+                PlayerCharacter->Jump();
+                break;
+
+            case EJetpackState::Regenerating:
+                // Jetpack is inactive when refueling, so cannot do anything but stick with the regular jump logic
+                PlayerCharacter->Jump();
+                break;
+            default:
+                // Jetpack is ready to use!
+                JetpackActive();
+                break;
+            }
+        }
+        else
+        {
+            // Grounded, so perform a normal jump
+            PlayerCharacter->Jump();
+        }
     }
 }
 
@@ -119,18 +166,16 @@ void AHallowburgePlayerController::JumpFunctionEnd()
 {
     if (PlayerCharacter)
     {
-        PlayerCharacter->StopJumping();
+        if (JetpackState == EJetpackState::Active)
+        {
+            JetpackDeactivate();
+        }
+        else
+        {
+            // Stop the regular jump if jetpack isn't active
+            PlayerCharacter->StopJumping();
+        }
     }
-}
-
-void AHallowburgePlayerController::CrouchStart()
-{
-    PlayerCharacter->Crouch();
-}
-
-void AHallowburgePlayerController::CrouchEnd()
-{
-    PlayerCharacter->UnCrouch();
 }
 
 void AHallowburgePlayerController::SprintStart()
@@ -143,52 +188,79 @@ void AHallowburgePlayerController::SprintEnd()
     PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
-void AHallowburgePlayerController::PossessionFunction()
+void AHallowburgePlayerController::JetpackActive()
 {
-    if (bCanDash)
+    if (PlayerCharacter && PlayerCharacter->GetCharacterMovement() && CurrentJetpackFuel > 0)
     {
-        // Perform dash logic
-        FVector ForwardDir = PlayerCharacter->GetActorRotation().Vector();
-        PlayerCharacter->LaunchCharacter(ForwardDir * DashDistance, true, true);
-
-        if (DashMontage)
-        {
-            PlayerCharacter->PlayAnimMontage(DashMontage, 1, NAME_None);
-        }
-
-        // Set bCanDash to false to prevent further dashes
-        bCanDash = false;
-
-        // Start the cooldown timer
-        GetWorld()->GetTimerManager().SetTimer(DashCooldownTimerHandle, this, &AHallowburgePlayerController::PossessionFunctionEnd, DashCooldown, false);
-
+        JetpackState = EJetpackState::Active; // Set to active to consume fuel
+        PlayerCharacter->GetCharacterMovement()->GravityScale = 0.0f; // Disable gravity
+        FVector Velocity = PlayerCharacter->GetVelocity();
+        FVector NewVelocity = FVector(Velocity.X, Velocity.Y, 250.0f);
+        PlayerCharacter->GetCharacterMovement()->Velocity = NewVelocity;
     }
-
-
-    //// Get the player's controller (assumed to be your custom player controller)
-    //APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-
-    //// Get the control rotation (camera direction)
-    //FRotator CameraRotation = PlayerController->GetControlRotation();
-
-    //// Only use the yaw (horizontal) component of the camera's rotation
-    //FRotator YawRotation(0, CameraRotation.Yaw, 0);
-
-    //// Get the forward direction of the camera
-    //FVector ForwardDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-    //// Perform the dash in the camera's forward direction
-    //PlayerCharacter->LaunchCharacter(ForwardDir * DashDistance, true, true);
-
-    //if (DashMontage)
-    //{
-    //    PlayerCharacter->PlayAnimMontage(DashMontage, 1, NAME_None);
-    //}
 }
 
-void AHallowburgePlayerController::PossessionFunctionEnd()
+void AHallowburgePlayerController::JetpackDeactivate()
 {
-    bCanDash = true;
+    if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+    {
+        // Return gravity to normal
+        PlayerCharacter->GetCharacterMovement()->GravityScale = 1.0f;
+
+        // Switch back to Idle state when jetpack is deactivated
+        JetpackState = EJetpackState::Regenerating; // was originally idle
+    }
+}
+
+void AHallowburgePlayerController::ConsumeJetpackFuel(float DeltaTime)
+{
+    // Decrease fuel based on DeltaTime (e.g., 20 units of fuel per second)
+    CurrentJetpackFuel -= 20.0f * DeltaTime;
+
+    // If fuel runs out, deactivate jetpack
+    if (CurrentJetpackFuel <= 0)
+    {
+        CurrentJetpackFuel = 0;
+        JetpackState = EJetpackState::Empty;
+    }
+}
+
+void AHallowburgePlayerController::RefuelJetpack(float DeltaTime)
+{
+    // Regenerate fuel over time
+    if (CurrentJetpackFuel < MaxJetpackFuel)
+    {
+        CurrentJetpackFuel += RefuelJetpackRate * DeltaTime;
+        CurrentJetpackFuel = FMath::Clamp(CurrentJetpackFuel, 0.0f, MaxJetpackFuel);
+
+        // Stop regenerating once fully refueled
+        if (CurrentJetpackFuel >= MaxJetpackFuel)
+        {
+            JetpackState = EJetpackState::Idle;
+        }
+    }
+}
+
+void AHallowburgePlayerController::PossessionAbilityCheck()
+{
+    switch (PlayerCharacter->PlayerPawn)
+    {
+    case EPlayerPawn::Ghost: // The ghost will dash, and will have the ability to possess
+        
+        DashMovement(1);
+        // possession logic
+        return;
+
+    case EPlayerPawn::None: // This is only if there is an error, this hopefully should never happen
+        
+        return;
+
+    default:    // Everyone else will use this ability to leave the possession and return to being a ghost. They will dash in a similar way to the ghost, but backwards
+        
+        // unpossession logic
+        DashMovement(-1);
+        return;
+    }
 }
 
 void AHallowburgePlayerController::Button1Action()
@@ -199,4 +271,38 @@ void AHallowburgePlayerController::Button1Action()
 void AHallowburgePlayerController::Button2Action()
 {
 
+}
+
+void AHallowburgePlayerController::DashMovement(int PositiveNegativeDirection)
+{
+    if (bCanDash)
+    {
+        // Perform dash logic
+        FVector ForwardDir = PlayerCharacter->GetActorRotation().Vector();
+        PlayerCharacter->LaunchCharacter(ForwardDir * DashDistance * PositiveNegativeDirection, true, true);
+
+        if (DashMontage)
+        {
+            PlayerCharacter->PlayAnimMontage(DashMontage, 1, NAME_None);
+        }
+
+        // Set bCanDash to false to prevent further dashes
+        bCanDash = false;
+
+        
+        // Start the cooldown timer
+        if (PositiveNegativeDirection > 0)
+        {
+            GetWorld()->GetTimerManager().SetTimer(DashCooldownTimerHandle, this, &AHallowburgePlayerController::DashMovementEnd, DashCooldown, false);
+        }
+        else
+        {
+            GetWorld()->GetTimerManager().SetTimer(DashCooldownTimerHandle, this, &AHallowburgePlayerController::DashMovementEnd, DashCooldown * 1.5, false);
+        }
+    }
+}
+
+void AHallowburgePlayerController::DashMovementEnd()
+{
+    bCanDash = true;
 }

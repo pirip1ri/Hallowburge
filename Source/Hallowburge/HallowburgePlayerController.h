@@ -9,13 +9,13 @@
 #include "GameFramework/PlayerController.h"
 #include "HallowburgePlayerController.generated.h"
 
-// Enum that checks what the player can do in any specific state
 UENUM(BlueprintType)
-enum class EPlayerPawnController : uint8
+enum class EJetpackState : uint8
 {
-	None		UMETA(DisplayName = "None"),
-	Ghoul		UMETA(DisplayName = "Ghoul"),
-	Astronaut	UMETA(DisplayName = "Astronaut")
+	Idle        UMETA(DisplayName = "Idle"),         // No activity
+	Active      UMETA(DisplayName = "Active"),		 // Jetpack is being used
+	Empty		UMETA(DisplayName = "Empty"),		 // No more fuel
+	Regenerating UMETA(DisplayName = "Regenerating") // Jetpack fuel is regenerating
 };
 
 UCLASS()
@@ -29,12 +29,12 @@ public:
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 
 protected:
-	EPlayerPawnController* PlayerPawnController;
 	AHallowburgePlayerCharacter* PlayerCharacter;
 
 	float RunSpeed = 600.0f;
 	float SprintSpeed = 900.0f;
 	float MaxWalkSpeed;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
 	bool bCanDash;
@@ -43,6 +43,16 @@ protected:
 	float DashDistance = 1800.0f;
 	FTimerHandle DashCooldownTimerHandle;
 
+public:
+	// Fuel amount for the jetpack (public or protected depending on design)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jetpack")
+	float MaxJetpackFuel = 50.0f;
+	float CurrentJetpackFuel = MaxJetpackFuel;
+	float RefuelJetpackRate = 10.0f;
+	UPROPERTY(BlueprintReadOnly)
+	EJetpackState JetpackState = EJetpackState::Idle;
+
+protected:
 	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
 	UPROPERTY(EditAnywhere, Category = "Look")
 	float BaseLookUpRate = 90.0f;
@@ -61,6 +71,15 @@ protected:
 public:
 	virtual void BeginPlay() override;
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	void JetpackActive();
+	void JetpackDeactivate();
+	// Private helper to handle jetpack fuel consumption
+	void ConsumeJetpackFuel(float DeltaTime);
+	void RefuelJetpack(float DeltaTime);
+
 protected:
 	void SetupInputComponent() override;
 
@@ -71,18 +90,20 @@ protected:
 
 	void JumpFunction();
 	void JumpFunctionEnd();
-	void CrouchStart();
-	void CrouchEnd();
 	void SprintStart();
 	void SprintEnd();
 
+
 	// Button for entering/leaving possession
-	void PossessionFunction();
-	void PossessionFunctionEnd();
+	void PossessionAbilityCheck();
 	// Button for character's ability
 	void Button1Action();
 	// Additional button for anything else
 	void Button2Action();
+
+
+	void DashMovement(int PositiveNegativeDirection);
+	void DashMovementEnd();
 
 	// Input Actions //
 
@@ -104,9 +125,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* CrouchAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* SprintAction;

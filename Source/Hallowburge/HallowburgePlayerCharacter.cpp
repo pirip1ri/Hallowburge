@@ -32,7 +32,7 @@ AHallowburgePlayerCharacter::AHallowburgePlayerCharacter()
 void AHallowburgePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+    PlayerPawn = EPlayerPawn::Ghost;
     if (GetCharacterMovement())
     {
         MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
@@ -54,10 +54,53 @@ void AHallowburgePlayerCharacter::Tick(float DeltaTime)
 
 }
 
+void AHallowburgePlayerCharacter::Landed(const FHitResult& Hit)
+{
+    Super::Landed(Hit);
+
+    // Get reference to the player controller
+    AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetController());
+
+    if (PlayerController)
+    {
+        // You can now safely modify JetpackState from the player controller
+        if (PlayerController->JetpackState != EJetpackState::Idle)
+        {
+
+            PlayerController->JetpackState = EJetpackState::Regenerating;
+        }
+    }
+}
+
 // Called to bind functionality to input
 void AHallowburgePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AHallowburgePlayerCharacter::PossessEnemy(ACharacter* TargetEnemy)
+{
+    if (TargetEnemy)
+    {
+        // Transfer control to the target enemy
+        GetController()->Possess(TargetEnemy);
+
+        // Update enum state to reflect the new possession
+        PlayerPawn = EPlayerPawn::Astronaut;  // Example: assuming "Astronaut" is the possessed form
+    }
+}
+
+void AHallowburgePlayerCharacter::UnpossessEnemy()
+{
+    // Return control to the main player character
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (PlayerController)
+    {
+        PlayerController->Possess(this);  // Possess the original player character
+    }
+
+    // Update enum state to reflect the player's original form
+    PlayerPawn = EPlayerPawn::Ghost;
 }
 
