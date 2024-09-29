@@ -16,6 +16,9 @@ UCLASS()
 class HALLOWBURGE_API AHallowburgePlayerCharacter_Ghoul : public AHallowburgePlayerCharacter
 {
 	GENERATED_BODY()
+
+public:
+	virtual void JumpFunction() override;
 	
 protected:
 

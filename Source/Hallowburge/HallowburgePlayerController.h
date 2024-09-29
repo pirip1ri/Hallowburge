@@ -9,15 +9,6 @@
 #include "GameFramework/PlayerController.h"
 #include "HallowburgePlayerController.generated.h"
 
-UENUM(BlueprintType)
-enum class EJetpackState : uint8
-{
-	Idle        UMETA(DisplayName = "Idle"),         // No activity
-	Active      UMETA(DisplayName = "Active"),		 // Jetpack is being used
-	Empty		UMETA(DisplayName = "Empty"),		 // No more fuel
-	Regenerating UMETA(DisplayName = "Regenerating") // Jetpack fuel is regenerating
-};
-
 UCLASS()
 class HALLOWBURGE_API AHallowburgePlayerController : public APlayerController
 {
@@ -29,7 +20,7 @@ public:
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 
 protected:
-	AHallowburgePlayerCharacter* PlayerCharacter;
+	APossessableCharacter* PlayerCharacter;
 
 	float RunSpeed = 600.0f;
 	float SprintSpeed = 900.0f;
@@ -42,15 +33,6 @@ protected:
 	float DashCooldown;
 	float DashDistance = 1800.0f;
 	FTimerHandle DashCooldownTimerHandle;
-
-public:
-	// Fuel amount for the jetpack (public or protected depending on design)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jetpack")
-	float MaxJetpackFuel = 50.0f;
-	float CurrentJetpackFuel = MaxJetpackFuel;
-	float RefuelJetpackRate = 10.0f;
-	UPROPERTY(BlueprintReadOnly)
-	EJetpackState JetpackState = EJetpackState::Idle;
 
 protected:
 	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
@@ -74,11 +56,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void JetpackActive();
-	void JetpackDeactivate();
-	// Private helper to handle jetpack fuel consumption
-	void ConsumeJetpackFuel(float DeltaTime);
-	void RefuelJetpack(float DeltaTime);
+
 
 protected:
 	void SetupInputComponent() override;

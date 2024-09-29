@@ -5,6 +5,10 @@
 #include "HallowburgePlayerController.h"
 #include "HallowburgeSandboxGameModeBase.h"
 
+void AHallowburgePlayerCharacter::JumpFunction()
+{
+}
+
 // Sets default values
 AHallowburgePlayerCharacter::AHallowburgePlayerCharacter()
 {
@@ -53,24 +57,24 @@ void AHallowburgePlayerCharacter::Tick(float DeltaTime)
     CharacterSpeed = GetVelocity().Size(); // Total velocity magnitude
 
 }
-
-void AHallowburgePlayerCharacter::Landed(const FHitResult& Hit)
-{
-    Super::Landed(Hit);
-
-    // Get reference to the player controller
-    AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetController());
-
-    if (PlayerController)
-    {
-        // You can now safely modify JetpackState from the player controller
-        if (PlayerController->JetpackState != EJetpackState::Idle)
-        {
-
-            PlayerController->JetpackState = EJetpackState::Regenerating;
-        }
-    }
-}
+//
+//void AHallowburgePlayerCharacter::Landed(const FHitResult& Hit)
+//{
+//    Super::Landed(Hit);
+//
+//    // Get reference to the player controller
+//    AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetController());
+//
+//    if (PlayerController)
+//    {
+//        // You can now safely modify JetpackState from the player controller
+//        if (PlayerController->JetpackState != EJetpackState::Idle)
+//        {
+//
+//            PlayerController->JetpackState = EJetpackState::Regenerating;
+//        }
+//    }
+//}
 
 // Called to bind functionality to input
 void AHallowburgePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

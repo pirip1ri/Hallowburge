@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "PossessableCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -20,7 +21,7 @@ class AHallowburgeSandboxGameModeBase;
 class AHallowburgePlayerController;
 
 UCLASS()
-class HALLOWBURGE_API AHallowburgePlayerCharacter : public ACharacter
+class HALLOWBURGE_API AHallowburgePlayerCharacter : public APossessableCharacter
 {
 	GENERATED_BODY()
 
@@ -45,7 +46,7 @@ protected:
 
 public:
 	EPlayerPawn PlayerPawn;
-
+	virtual void JumpFunction() override;
 
 
 
@@ -64,7 +65,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// When the character lands - MIGHT NEED TO MOVE
-	virtual void Landed(const FHitResult& Hit) override;
+	//virtual void Landed(const FHitResult& Hit) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

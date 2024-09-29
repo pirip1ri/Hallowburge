@@ -3,3 +3,6 @@
 
 #include "HallowburgePlayerCharacter_Ghoul.h"
 
+void AHallowburgePlayerCharacter_Ghoul::JumpFunction()
+{
+}

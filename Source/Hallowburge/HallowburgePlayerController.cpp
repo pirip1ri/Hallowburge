@@ -42,26 +42,6 @@ void AHallowburgePlayerController::BeginPlay()
 void AHallowburgePlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    // Handle Jetpack
-    switch (JetpackState)
-    {
-    case EJetpackState::Active:
-        ConsumeJetpackFuel(DeltaTime);
-        break;
-
-    case EJetpackState::Regenerating:
-        RefuelJetpack(DeltaTime);
-        break;
-    case EJetpackState::Empty:
-        JetpackDeactivate();
-        break;
-    case EJetpackState::Idle:
-    default:
-        // Do nothing when idle
-        break;
-    }
-    UE_LOG(LogTemp, Display, TEXT("Current amount of fuel: %f"), CurrentJetpackFuel);
 }
 
 void AHallowburgePlayerController::SetupInputComponent()
@@ -133,49 +113,28 @@ void AHallowburgePlayerController::MoveForward(const FInputActionValue& InputAct
 
 void AHallowburgePlayerController::JumpFunction()
 {
-    if (PlayerCharacter)
+    if(PlayerCharacter)
     {
-        if (PlayerCharacter->GetCharacterMovement()->IsFalling())
-        {
-            switch (JetpackState)
-            {
-            case EJetpackState::Empty:
-                // Jetpack is empty, fallback to normal jump behavior
-                PlayerCharacter->Jump();
-                break;
-
-            case EJetpackState::Regenerating:
-                // Jetpack is inactive when refueling, so cannot do anything but stick with the regular jump logic
-                PlayerCharacter->Jump();
-                break;
-            default:
-                // Jetpack is ready to use!
-                JetpackActive();
-                break;
-            }
-        }
-        else
-        {
-            // Grounded, so perform a normal jump
-            PlayerCharacter->Jump();
-        }
+        PlayerCharacter->JumpFunction();
     }
 }
 
 void AHallowburgePlayerController::JumpFunctionEnd()
 {
-    if (PlayerCharacter)
-    {
-        if (JetpackState == EJetpackState::Active)
-        {
-            JetpackDeactivate();
-        }
-        else
-        {
-            // Stop the regular jump if jetpack isn't active
-            PlayerCharacter->StopJumping();
-        }
-    }
+    // This logic needs to move to the Astronaut
+    // You will also need to define JumpFunctionEnd() as a virtual in PossessableCharacter
+    //if (PlayerCharacter)
+    //{
+    //    if (JetpackState == EJetpackState::Active)
+    //    {
+    //        JetpackDeactivate();
+    //    }
+    //    else
+    //    {
+    //        // Stop the regular jump if jetpack isn't active
+    //        PlayerCharacter->StopJumping();
+    //    }
+    //}
 }
 
 void AHallowburgePlayerController::SprintStart()
@@ -188,62 +147,10 @@ void AHallowburgePlayerController::SprintEnd()
     PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
-void AHallowburgePlayerController::JetpackActive()
-{
-    if (PlayerCharacter && PlayerCharacter->GetCharacterMovement() && CurrentJetpackFuel > 0)
-    {
-        JetpackState = EJetpackState::Active; // Set to active to consume fuel
-        PlayerCharacter->GetCharacterMovement()->GravityScale = 0.0f; // Disable gravity
-        FVector Velocity = PlayerCharacter->GetVelocity();
-        FVector NewVelocity = FVector(Velocity.X, Velocity.Y, 250.0f);
-        PlayerCharacter->GetCharacterMovement()->Velocity = NewVelocity;
-    }
-}
-
-void AHallowburgePlayerController::JetpackDeactivate()
-{
-    if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
-    {
-        // Return gravity to normal
-        PlayerCharacter->GetCharacterMovement()->GravityScale = 1.0f;
-
-        // Switch back to Idle state when jetpack is deactivated
-        JetpackState = EJetpackState::Regenerating; // was originally idle
-    }
-}
-
-void AHallowburgePlayerController::ConsumeJetpackFuel(float DeltaTime)
-{
-    // Decrease fuel based on DeltaTime (e.g., 20 units of fuel per second)
-    CurrentJetpackFuel -= 20.0f * DeltaTime;
-
-    // If fuel runs out, deactivate jetpack
-    if (CurrentJetpackFuel <= 0)
-    {
-        CurrentJetpackFuel = 0;
-        JetpackState = EJetpackState::Empty;
-    }
-}
-
-void AHallowburgePlayerController::RefuelJetpack(float DeltaTime)
-{
-    // Regenerate fuel over time
-    if (CurrentJetpackFuel < MaxJetpackFuel)
-    {
-        CurrentJetpackFuel += RefuelJetpackRate * DeltaTime;
-        CurrentJetpackFuel = FMath::Clamp(CurrentJetpackFuel, 0.0f, MaxJetpackFuel);
-
-        // Stop regenerating once fully refueled
-        if (CurrentJetpackFuel >= MaxJetpackFuel)
-        {
-            JetpackState = EJetpackState::Idle;
-        }
-    }
-}
-
 void AHallowburgePlayerController::PossessionAbilityCheck()
 {
-    switch (PlayerCharacter->PlayerPawn)
+    AHallowburgePlayerCharacter* HallowPC = Cast<AHallowburgePlayerCharacter>(PlayerCharacter);
+    switch (HallowPC->PlayerPawn)
     {
     case EPlayerPawn::Ghost: // The ghost will dash, and will have the ability to possess
         
