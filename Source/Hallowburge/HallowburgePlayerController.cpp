@@ -15,7 +15,7 @@ void AHallowburgePlayerController::BeginPlay()
     // Ensure the character is valid and get the character movement component
     if (APawn* ControlledPawn = GetPawn())
     {
-        PlayerCharacter = Cast<AHallowburgePlayerCharacter>(ControlledPawn);
+        PlayerCharacter = Cast<AGhostPlayerCharacter>(ControlledPawn);
 
         if (PlayerCharacter)
         {
@@ -149,7 +149,7 @@ void AHallowburgePlayerController::SprintEnd()
 
 void AHallowburgePlayerController::PossessionAbilityCheck()
 {
-    AHallowburgePlayerCharacter* HallowPC = Cast<AHallowburgePlayerCharacter>(PlayerCharacter);
+    AGhostPlayerCharacter* HallowPC = Cast<AGhostPlayerCharacter>(PlayerCharacter);
     switch (HallowPC->PlayerPawn)
     {
     case EPlayerPawn::Ghost: // The ghost will dash, and will have the ability to possess

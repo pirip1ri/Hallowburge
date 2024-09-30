@@ -1,3 +1,5 @@
+
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -6,7 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "HallowburgePlayerCharacter.generated.h"
+#include "GhostPlayerCharacter.generated.h"
 
 // Enum that checks what the player can do in any specific state
 UENUM(BlueprintType)
@@ -21,7 +23,7 @@ class AHallowburgeSandboxGameModeBase;
 class AHallowburgePlayerController;
 
 UCLASS()
-class HALLOWBURGE_API AHallowburgePlayerCharacter : public APossessableCharacter
+class HALLOWBURGE_API AGhostPlayerCharacter : public APossessableCharacter
 {
 	GENERATED_BODY()
 
@@ -54,7 +56,7 @@ public:
 	// Functions //
 
 	// Sets default values for this character's properties
-	AHallowburgePlayerCharacter();
+	AGhostPlayerCharacter();
 
 protected:
 	// Called when the game starts or when spawned

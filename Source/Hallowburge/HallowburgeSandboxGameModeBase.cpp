@@ -2,7 +2,7 @@
 
 
 #include "HallowburgeSandboxGameModeBase.h"
-#include "HallowburgePlayerCharacter.h"
+#include "GhostPlayerCharacter.h"
 #include "HallowburgePlayerController.h"
 
 AHallowburgeSandboxGameModeBase::AHallowburgeSandboxGameModeBase()
@@ -10,7 +10,7 @@ AHallowburgeSandboxGameModeBase::AHallowburgeSandboxGameModeBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Set default pawn class to your custom player character
-	DefaultPawnClass = AHallowburgePlayerCharacter::StaticClass();
+	DefaultPawnClass = AGhostPlayerCharacter::StaticClass();
 
 	// Set the player controller class to your custom player controller
 	PlayerControllerClass = AHallowburgePlayerController::StaticClass();

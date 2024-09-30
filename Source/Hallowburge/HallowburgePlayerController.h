@@ -4,7 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
-#include "HallowburgePlayerCharacter.h"
+#include "GhostPlayerCharacter.h"
 #include "HallowburgeSandboxGameModeBase.h"
 #include "GameFramework/PlayerController.h"
 #include "HallowburgePlayerController.generated.h"
@@ -34,7 +34,6 @@ protected:
 	float DashDistance = 1800.0f;
 	FTimerHandle DashCooldownTimerHandle;
 
-protected:
 	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
 	UPROPERTY(EditAnywhere, Category = "Look")
 	float BaseLookUpRate = 90.0f;

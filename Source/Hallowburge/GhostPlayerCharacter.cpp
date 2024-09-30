@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HallowburgePlayerCharacter.h"
+#include "GhostPlayerCharacter.h"
 #include "HallowburgePlayerController.h"
 #include "HallowburgeSandboxGameModeBase.h"
 
-void AHallowburgePlayerCharacter::JumpFunction()
+void AGhostPlayerCharacter::JumpFunction()
 {
 }
 
 // Sets default values
-AHallowburgePlayerCharacter::AHallowburgePlayerCharacter()
+AGhostPlayerCharacter::AGhostPlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -33,7 +33,7 @@ AHallowburgePlayerCharacter::AHallowburgePlayerCharacter()
 }
 
 // Called when the game starts or when spawned
-void AHallowburgePlayerCharacter::BeginPlay()
+void AGhostPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
     PlayerPawn = EPlayerPawn::Ghost;
@@ -49,7 +49,7 @@ void AHallowburgePlayerCharacter::BeginPlay()
 }
 
 // Called every frame
-void AHallowburgePlayerCharacter::Tick(float DeltaTime)
+void AGhostPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -58,7 +58,7 @@ void AHallowburgePlayerCharacter::Tick(float DeltaTime)
 
 }
 //
-//void AHallowburgePlayerCharacter::Landed(const FHitResult& Hit)
+//void AGhostPlayerCharacter::Landed(const FHitResult& Hit)
 //{
 //    Super::Landed(Hit);
 //
@@ -77,13 +77,13 @@ void AHallowburgePlayerCharacter::Tick(float DeltaTime)
 //}
 
 // Called to bind functionality to input
-void AHallowburgePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AGhostPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
 
-void AHallowburgePlayerCharacter::PossessEnemy(ACharacter* TargetEnemy)
+void AGhostPlayerCharacter::PossessEnemy(ACharacter* TargetEnemy)
 {
     if (TargetEnemy)
     {
@@ -95,7 +95,7 @@ void AHallowburgePlayerCharacter::PossessEnemy(ACharacter* TargetEnemy)
     }
 }
 
-void AHallowburgePlayerCharacter::UnpossessEnemy()
+void AGhostPlayerCharacter::UnpossessEnemy()
 {
     // Return control to the main player character
     APlayerController* PlayerController = Cast<APlayerController>(GetController());
