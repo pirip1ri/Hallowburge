@@ -22,15 +22,6 @@ class HALLOWBURGE_API AAstronautPlayerCharacter : public APossessableCharacter
 	GENERATED_BODY()
 
 public:
-	void JetpackActive();
-	void JetpackDeactivate();
-	// Private helper to handle jetpack fuel consumption
-	void ConsumeJetpackFuel(float DeltaTime);
-	void RefuelJetpack(float DeltaTime);
-
-
-	// Sets default values for this character's properties
-	AAstronautPlayerCharacter();
 
 	// Fuel amount for the jetpack (public or protected depending on design)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jetpack")
@@ -44,6 +35,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void JetpackActive();
+	void JetpackDeactivate();
+	// Private helper to handle jetpack fuel consumption
+	void ConsumeJetpackFuel(float DeltaTime);
+	void RefuelJetpack(float DeltaTime);
+
+
+	// Sets default values for this character's properties
+	AAstronautPlayerCharacter();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -52,5 +53,5 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void JumpFunction() override;
-
+	virtual void JumpFunctionEnd() override;
 };

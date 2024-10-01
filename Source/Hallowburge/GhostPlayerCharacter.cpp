@@ -5,10 +5,6 @@
 #include "HallowburgePlayerController.h"
 #include "HallowburgeSandboxGameModeBase.h"
 
-void AGhostPlayerCharacter::JumpFunction()
-{
-}
-
 // Sets default values
 AGhostPlayerCharacter::AGhostPlayerCharacter()
 {
@@ -48,6 +44,11 @@ void AGhostPlayerCharacter::BeginPlay()
     GameModeRef = Cast<AHallowburgeSandboxGameModeBase>(GetWorld()->GetAuthGameMode());
 }
 
+void AGhostPlayerCharacter::PossessionAbilityCheck()
+{
+
+}
+
 // Called every frame
 void AGhostPlayerCharacter::Tick(float DeltaTime)
 {
@@ -57,54 +58,11 @@ void AGhostPlayerCharacter::Tick(float DeltaTime)
     CharacterSpeed = GetVelocity().Size(); // Total velocity magnitude
 
 }
-//
-//void AGhostPlayerCharacter::Landed(const FHitResult& Hit)
-//{
-//    Super::Landed(Hit);
-//
-//    // Get reference to the player controller
-//    AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetController());
-//
-//    if (PlayerController)
-//    {
-//        // You can now safely modify JetpackState from the player controller
-//        if (PlayerController->JetpackState != EJetpackState::Idle)
-//        {
-//
-//            PlayerController->JetpackState = EJetpackState::Regenerating;
-//        }
-//    }
-//}
 
 // Called to bind functionality to input
 void AGhostPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
-
-void AGhostPlayerCharacter::PossessEnemy(ACharacter* TargetEnemy)
-{
-    if (TargetEnemy)
-    {
-        // Transfer control to the target enemy
-        GetController()->Possess(TargetEnemy);
-
-        // Update enum state to reflect the new possession
-        PlayerPawn = EPlayerPawn::Astronaut;  // Example: assuming "Astronaut" is the possessed form
-    }
-}
-
-void AGhostPlayerCharacter::UnpossessEnemy()
-{
-    // Return control to the main player character
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
-    if (PlayerController)
-    {
-        PlayerController->Possess(this);  // Possess the original player character
-    }
-
-    // Update enum state to reflect the player's original form
-    PlayerPawn = EPlayerPawn::Ghost;
 }
 

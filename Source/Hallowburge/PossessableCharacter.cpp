@@ -32,3 +32,78 @@ void APossessableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
+void APossessableCharacter::DashMovement(int PositiveNegativeDirection)
+{
+    if (bCanDash)
+    {
+        // Perform dash logic
+        FVector ForwardDir = GetActorRotation().Vector();
+        LaunchCharacter(ForwardDir * DashDistance * PositiveNegativeDirection, true, true);
+
+        if (DashMontage)
+        {
+            PlayAnimMontage(DashMontage, 1, NAME_None);
+        }
+
+        // Set bCanDash to false to prevent further dashes
+        bCanDash = false;
+
+
+        // Start the cooldown timer
+        if (PositiveNegativeDirection > 0)
+        {
+            GetWorld()->GetTimerManager().SetTimer(DashCooldownTimerHandle, this, &APossessableCharacter::DashMovementEnd, DashCooldown, false);
+        }
+        else
+        {
+            GetWorld()->GetTimerManager().SetTimer(DashCooldownTimerHandle, this, &APossessableCharacter::DashMovementEnd, DashCooldown * 1.5, false);
+        }
+    }
+}
+
+void APossessableCharacter::DashMovementEnd()
+{
+    bCanDash = true;
+}
+
+void APossessableCharacter::JumpFunction()
+{
+    Jump();
+}
+
+void APossessableCharacter::JumpFunctionEnd()
+{
+    StopJumping();
+}
+
+void APossessableCharacter::PossessionAbilityCheck()
+{
+
+}
+
+void APossessableCharacter::ChangePlayerCharacter()
+{
+    /*  // Potential Logic for possessing
+    if (TargetEnemy)
+    {
+        // Transfer control to the target enemy
+        GetController()->Possess(TargetEnemy);
+
+        // Update enum state to reflect the new possession
+        PlayerPawn = EPlayerPawn::Astronaut;  // Example: assuming "Astronaut" is the possessed form
+    } 
+    
+    
+        // Potential Logic for unpossessing
+
+        // Return control to the main player character
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (PlayerController)
+    {
+        PlayerController->Possess(this);  // Possess the original player character
+    }
+
+    // Update enum state to reflect the player's original form
+    PlayerPawn = EPlayerPawn::Ghost; */
+}
+

@@ -20,19 +20,11 @@ public:
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 
 protected:
-	APossessableCharacter* PlayerCharacter;
+	APossessableCharacter* PlayerCharacter = Cast<APossessableCharacter>(GetCharacter());
 
 	float RunSpeed = 600.0f;
 	float SprintSpeed = 900.0f;
 	float MaxWalkSpeed;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
-	bool bCanDash;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
-	float DashCooldown;
-	float DashDistance = 1800.0f;
-	FTimerHandle DashCooldownTimerHandle;
 
 	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
 	UPROPERTY(EditAnywhere, Category = "Look")
@@ -41,10 +33,6 @@ protected:
 	/** Base lookright rate, in deg/sec. Other scaling may affect final lookup rate. */
 	UPROPERTY(EditAnywhere, Category = "Look")
 	float BaseLookRightRate = 90.0f;
-
-	// For Animations
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* DashMontage;
 
 
 
@@ -56,62 +44,41 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-
+	// Player Input Function Calls //
 protected:
+
 	void SetupInputComponent() override;
 
-	void LookUp(const FInputActionValue& InputAction);
-	void Turn(const FInputActionValue& InputAction);
-	void MoveRight(const FInputActionValue& InputAction);
-	void MoveForward(const FInputActionValue& InputAction);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void LookUp(const float& InputValue);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void Turn(const float& InputValue);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void MoveRight(const float& InputValue);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void MoveForward(const float& InputValue);
 
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void JumpFunction();
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void JumpFunctionEnd();
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void SprintStart();
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void SprintEnd();
 
 
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	// Button for entering/leaving possession
 	void PossessionAbilityCheck();
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	// Button for character's ability
 	void Button1Action();
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	// Additional button for anything else
 	void Button2Action();
-
-
-	void DashMovement(int PositiveNegativeDirection);
-	void DashMovementEnd();
-
-	// Input Actions //
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TSoftObjectPtr<UInputMappingContext> InputMapping;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* LookUpAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* TurnAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* MoveRightAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* MoveForwardAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* SprintAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* PossessionAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* Ability1Action;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* Ability2Action;
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void Button1ActionEnd();
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void Button2ActionEnd();
 };

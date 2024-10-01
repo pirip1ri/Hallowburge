@@ -81,6 +81,19 @@ void AAstronautPlayerCharacter::JumpFunction()
     }
 }
 
+void AAstronautPlayerCharacter::JumpFunctionEnd()
+{
+    if (JetpackState == EJetpackState::Active)
+    {
+        JetpackDeactivate();
+    }
+    else
+    {
+        // Stop the regular jump if jetpack isn't active
+        StopJumping();
+    }
+}
+
 void AAstronautPlayerCharacter::JetpackActive()
 {
     if (GetCharacterMovement() && CurrentJetpackFuel > 0)
