@@ -3,13 +3,34 @@
 
 #include "AstronautPlayerCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HallowburgeSandboxGameModeBase.h"
 #include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AAstronautPlayerCharacter::AAstronautPlayerCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
+
+    // Create a Spring Arm component and attach it to the character's root component
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(RootComponent);
+    SpringArm->TargetArmLength = 300.0f;
+    SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+    // Create a Camera component and attach it to the Spring Arm
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+    Camera->bUsePawnControlRotation = true;
+
+    // Disable character rotation by controller pitch
+    bUseControllerRotationYaw = true;
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationRoll = false;
+
+    // Initialize the projectile spawner component and attach it to the root
+    ProjectileSpawner = CreateDefaultSubobject<UProjectileSpawner>(TEXT("ProjectileSpawner"));
+    ProjectileSpawner->SetupAttachment(RootComponent);
 
 }
 
@@ -17,7 +38,16 @@ AAstronautPlayerCharacter::AAstronautPlayerCharacter()
 void AAstronautPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+    PlayerPawn = EPlayerPawn::Astronaut;
+    if (GetCharacterMovement())
+    {
+        MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+    }
+
+    // Allows the character to move easily in the air while jumping
+    GetCharacterMovement()->AirControl = 0.8f;
+
+    GameModeRef = Cast<AHallowburgeSandboxGameModeBase>(GetWorld()->GetAuthGameMode());
 }
 
 // Called every frame
@@ -43,7 +73,51 @@ void AAstronautPlayerCharacter::Tick(float DeltaTime)
         // Do nothing when idle
         break;
     }
-    UE_LOG(LogTemp, Display, TEXT("Current amount of fuel: %f"), CurrentJetpackFuel);
+
+    // Calculate and update CharacterSpeed from movement - for animation
+    CharacterSpeed = GetVelocity().Size(); // Total velocity magnitude
+
+    switch (ChargingState)
+    {
+    case EChargingShotState::Charging:
+        ChargeTime += DeltaTime;
+        break;
+
+    case EChargingShotState::Cooldown:
+        if (ChargeTime > 0)
+        {
+            ChargeTime -= DeltaTime;
+            break;
+        }
+        else
+        {
+            ChargingState = EChargingShotState::Idle;
+            break;
+        }
+    case EChargingShotState::Idle:
+    default:
+        // Do nothing when idle
+        break;
+    }
+}
+
+void AAstronautPlayerCharacter::Shoot()
+{
+    if (bCanShoot && ProjectileSpawner)
+    {
+        float ProjectileSpeed = FMath::GetMappedRangeValueClamped(FVector2D(MinChargeTime, MaxChargeTime), FVector2D(MinProjectileSpeed, MaxProjectileSpeed), ChargeTime);
+        ProjectileSpawner->SpawnProjectile(ShootingProjectile, ProjectileSpeed);
+        UE_LOG(LogTemp, Display, TEXT("Projectile Speed: %f"), ProjectileSpeed);
+
+        // Start cooldown before next shot can be fired
+        bCanShoot = false;
+        GetWorld()->GetTimerManager().SetTimer(ShootingCooldownTimerHandle, this, &AAstronautPlayerCharacter::ResetShootingCooldown, ProjectileSpawnerCooldown, false);
+    }
+}
+
+void AAstronautPlayerCharacter::ResetShootingCooldown()
+{
+    bCanShoot = true;
 }
 
 // Called to bind functionality to input
@@ -92,6 +166,21 @@ void AAstronautPlayerCharacter::JumpFunctionEnd()
         // Stop the regular jump if jetpack isn't active
         StopJumping();
     }
+}
+
+void AAstronautPlayerCharacter::ActionButton1()
+{
+    ChargingState = EChargingShotState::Charging;
+}
+
+void AAstronautPlayerCharacter::ActionButton1End()
+{
+    ChargingState = EChargingShotState::Cooldown;
+
+    // Clamp the charge time between min and max
+    ChargeTime = FMath::Clamp(ChargeTime, MinChargeTime, MaxChargeTime);
+
+    Shoot();
 }
 
 void AAstronautPlayerCharacter::JetpackActive()

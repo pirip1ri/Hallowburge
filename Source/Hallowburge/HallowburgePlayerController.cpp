@@ -15,7 +15,8 @@ void AHallowburgePlayerController::BeginPlay()
     // Ensure the character is valid and get the character movement component
     if (APawn* ControlledPawn = GetPawn())
     {
-        PlayerCharacter = Cast<AGhostPlayerCharacter>(ControlledPawn);
+        // Cast to APossessableCharacter instead of a specific subclass
+        PlayerCharacter = Cast<APossessableCharacter>(ControlledPawn);
 
         if (PlayerCharacter)
         {
@@ -25,8 +26,13 @@ void AHallowburgePlayerController::BeginPlay()
                 MaxWalkSpeed = PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed;
                 PlayerCharacter->GetCharacterMovement()->AirControl = 0.8f;  // Set air control
             }
+
             // Get reference to the GameMode
             GameModeRef = Cast<AHallowburgeSandboxGameModeBase>(UGameplayStatics::GetGameMode(this));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Controlled Pawn is not of type APossessableCharacter!"));
         }
     }
 }
@@ -100,12 +106,26 @@ void AHallowburgePlayerController::JumpFunctionEnd()
 
 void AHallowburgePlayerController::SprintStart()
 {
-    PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+    if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+    {
+        PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter or its movement component is not valid!"));
+    }
 }
 
 void AHallowburgePlayerController::SprintEnd()
 {
-    PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+    if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+    {
+        PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter or its movement component is not valid!"));
+    }
 }
 
 void AHallowburgePlayerController::PossessionAbilityCheck()
