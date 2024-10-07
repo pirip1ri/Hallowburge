@@ -4,7 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
-#include "GhostPlayerCharacter.h"
+#include "PossessableCharacter.h"
 #include "HallowburgeSandboxGameModeBase.h"
 #include "GameFramework/PlayerController.h"
 #include "HallowburgePlayerController.generated.h"

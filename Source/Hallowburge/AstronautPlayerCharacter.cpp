@@ -12,22 +12,6 @@ AAstronautPlayerCharacter::AAstronautPlayerCharacter()
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
-    // Create a Spring Arm component and attach it to the character's root component
-    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 300.0f;
-    SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-    // Create a Camera component and attach it to the Spring Arm
-    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-    Camera->bUsePawnControlRotation = true;
-
-    // Disable character rotation by controller pitch
-    bUseControllerRotationYaw = true;
-    bUseControllerRotationPitch = false;
-    bUseControllerRotationRoll = false;
-
     // Initialize the projectile spawner component and attach it to the root
     ProjectileSpawner = CreateDefaultSubobject<UProjectileSpawner>(TEXT("ProjectileSpawner"));
     ProjectileSpawner->SetupAttachment(RootComponent);
@@ -38,7 +22,6 @@ AAstronautPlayerCharacter::AAstronautPlayerCharacter()
 void AAstronautPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-    PlayerPawn = EPlayerPawn::Astronaut;
     if (GetCharacterMovement())
     {
         MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;

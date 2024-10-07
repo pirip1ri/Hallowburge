@@ -2,13 +2,40 @@
 
 
 #include "PossessableCharacter.h"
+#include "Components/CapsuleComponent.h"
+
 
 // Sets default values
 APossessableCharacter::APossessableCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Create a collision box that will deal with any collision logic
+    CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+    CollisionBox->SetupAttachment(RootComponent); // Attach to the root component or another desired component
+    CollisionBox->SetBoxExtent(FVector(50.0f, 50.0f, 150.0f)); // default size
+    CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable query- to detect overlaps 
+    CollisionBox->SetCollisionObjectType(ECC_Pawn);  // Set this box as a Pawn type for possession checks
+    CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+    CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // Overlap with possessable characters
+    CollisionBox->SetGenerateOverlapEvents(true);
 
+    
+    // Create a Spring Arm component and attach it to the character's root component
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(CollisionBox);
+    SpringArm->TargetArmLength = 300.0f;
+    SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+    // Create a Camera component and attach it to the Spring Arm
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+    Camera->bUsePawnControlRotation = true;
+
+
+
+    // Disable character rotation by controller pitch
+    bUseControllerRotationYaw = true;
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationRoll = false;
 }
 
 // Called when the game starts or when spawned
@@ -78,32 +105,11 @@ void APossessableCharacter::JumpFunctionEnd()
 
 void APossessableCharacter::PossessionAbilityCheck()
 {
-
+    UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() called for"));
 }
 
-void APossessableCharacter::ChangePlayerCharacter()
+void APossessableCharacter::PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    /*  // Potential Logic for possessing
-    if (TargetEnemy)
-    {
-        // Transfer control to the target enemy
-        GetController()->Possess(TargetEnemy);
-
-        // Update enum state to reflect the new possession
-        PlayerPawn = EPlayerPawn::Astronaut;  // Example: assuming "Astronaut" is the possessed form
-    } 
-    
-    
-        // Potential Logic for unpossessing
-
-        // Return control to the main player character
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
-    if (PlayerController)
-    {
-        PlayerController->Possess(this);  // Possess the original player character
-    }
-
-    // Update enum state to reflect the player's original form
-    PlayerPawn = EPlayerPawn::Ghost; */
+    UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::ChangePlayerCharacter called for"));
 }
 

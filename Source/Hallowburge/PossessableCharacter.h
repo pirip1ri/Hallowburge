@@ -3,21 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/BoxComponent.h"
 #include "PossessableCharacter.generated.h"
+
 
 UENUM(BlueprintType)
 enum class EPlayerPawn : uint8
 {
-	None		UMETA(DisplayName = "None"),
-	Ghost		UMETA(DisplayName = "Ghost"),
-	Astronaut	UMETA(DisplayName = "Astronaut")
+	None				UMETA(DisplayName = "None"),
+	Ghost				UMETA(DisplayName = "Ghost"),
+	PossessedCreature	UMETA(DisplayName = "Possessed Creature")
 };
 
 class AHallowburgeSandboxGameModeBase;
 class AHallowburgePlayerController;
+class AGhostPlayerCharacter;
 
 UCLASS()
 class HALLOWBURGE_API APossessableCharacter : public ACharacter
@@ -32,18 +36,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* Camera;
 
-	AHallowburgeSandboxGameModeBase* GameModeRef;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
+	UBoxComponent* CollisionBox;
 
+	AHallowburgeSandboxGameModeBase* GameModeRef;
 	EPlayerPawn PlayerPawn;
+	
 
 	// Objects - Animation stuff //
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	float CharacterSpeed;
 	float MaxWalkSpeed = 600.0f;
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bCanDash;
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
 	float DashCooldown;
 	float DashDistance = 1800.0f;
@@ -79,5 +86,5 @@ protected:
 
 	void DashMovement(int PositiveNegativeDirection);
 	void DashMovementEnd();
-	void ChangePlayerCharacter(); // maybe add variable APossessableCharacter* TargetCharachter
+	virtual void PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
 };
