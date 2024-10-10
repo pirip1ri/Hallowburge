@@ -20,7 +20,6 @@ enum class EPlayerPawn : uint8
 };
 
 class AHallowburgeSandboxGameModeBase;
-class AHallowburgePlayerController;
 class AGhostPlayerCharacter;
 
 UCLASS()
@@ -42,12 +41,16 @@ protected:
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 	EPlayerPawn PlayerPawn;
 	
+public:
+	AGhostPlayerCharacter* GhostCharacter = nullptr;
 
 	// Objects - Animation stuff //
 
+protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	float CharacterSpeed;
 	float MaxWalkSpeed = 600.0f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bCanDash;
 public:
@@ -59,6 +62,9 @@ public:
 	// For Animations
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* DashMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TSoftObjectPtr<UInputMappingContext> InputMapping;
 
 
 	// Functions //

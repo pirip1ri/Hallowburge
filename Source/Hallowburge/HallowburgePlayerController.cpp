@@ -2,8 +2,6 @@
 
 
 #include "HallowburgePlayerController.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputMappingContext.h"
 #include <Kismet/GameplayStatics.h>
@@ -41,6 +39,12 @@ void AHallowburgePlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }
+
+void AHallowburgePlayerController::SwitchInputMappingContext_Implementation(APossessableCharacter* NewPossessedCharacter, int Priority)
+{
+    // Leave empty, do this in Blueprints
+}
+
 
 void AHallowburgePlayerController::SetupInputComponent()
 {

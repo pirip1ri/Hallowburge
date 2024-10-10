@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
 #include "PossessableCharacter.h"
 #include "HallowburgeSandboxGameModeBase.h"
@@ -17,10 +16,13 @@ class HALLOWBURGE_API AHallowburgePlayerController : public APlayerController
 	
 	// Universal Parameters //
 public:
+
 	AHallowburgeSandboxGameModeBase* GameModeRef;
+	APossessableCharacter* PlayerCharacter = Cast<APossessableCharacter>(GetCharacter());
+
+	UEnhancedInputLocalPlayerSubsystem* EnhancedInputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 
 protected:
-	APossessableCharacter* PlayerCharacter = Cast<APossessableCharacter>(GetCharacter());
 
 	float RunSpeed = 600.0f;
 	float SprintSpeed = 900.0f;
@@ -42,6 +44,9 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Input")
+	void SwitchInputMappingContext(APossessableCharacter* NewPossessedCharacter, int Priority);
 
 
 	// Player Input Function Calls //

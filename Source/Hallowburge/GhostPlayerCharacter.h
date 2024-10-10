@@ -20,6 +20,8 @@ class HALLOWBURGE_API AGhostPlayerCharacter : public APossessableCharacter
 	// Objects // 
 protected:
 	bool bCanPossess = true;
+	FTimerHandle PossessionProgressTimerHandle;
+	FVector StartPossessionLocation;
 
 	// Functions //
 
@@ -33,7 +35,7 @@ protected:
 	virtual void PossessionAbilityCheck() override;
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	virtual void PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-
+	void EndPossessionCheck();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
