@@ -88,7 +88,7 @@ protected:
 	// Sets default values for this character's properties
 	AAstronautPlayerCharacter();
 
-
+	UFUNCTION(BlueprintCallable)
 	void Shoot();
 	void ResetShootingCooldown();
 public:	

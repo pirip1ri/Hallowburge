@@ -32,12 +32,15 @@ void AGhostPlayerCharacter::BeginPlay()
 
 void AGhostPlayerCharacter::PossessionAbilityCheck()
 {
-	UE_LOG(LogTemp, Display, TEXT("AGhostPlayerCharacter::PossessionAbilityCheck()"));
-	bCanPossess = true;
-	DashMovement(1);
-	StartPossessionLocation = GetActorLocation();
-	GetWorld()->GetTimerManager().SetTimer(PossessionProgressTimerHandle, this, &AGhostPlayerCharacter::EndPossessionCheck, 0.7f, false); // Check dash progress periodically
+	if (bCanDash)
+	{
+		UE_LOG(LogTemp, Display, TEXT("AGhostPlayerCharacter::PossessionAbilityCheck()"));
+		bCanPossess = true;
+		DashMovement(1);
+		StartPossessionLocation = GetActorLocation();
+		GetWorld()->GetTimerManager().SetTimer(PossessionProgressTimerHandle, this, &AGhostPlayerCharacter::EndPossessionCheck, 0.3f, false); // Check possession progress periodically
 
+	}
 }
 
 void AGhostPlayerCharacter::PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
