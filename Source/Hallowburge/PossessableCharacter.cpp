@@ -6,7 +6,6 @@
 #include "HallowburgePlayerController.h"
 #include "GhostPlayerCharacter.h"
 
-
 APossessableCharacter::APossessableCharacter()
 {
     // Create a collision box that will deal with any collision logic
@@ -107,34 +106,34 @@ void APossessableCharacter::JumpFunctionEnd()
 
 void APossessableCharacter::PossessionAbilityCheck()
 {
-    UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() called for"));
-    if (GhostCharacter)
-    {
-        // Get the player controller - should work for our single player game
-        AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
-        UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() GhostCharacter exists"));
+	UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() called for"));
+	if (GhostCharacter)
+	{
+		// Get the player controller - should work for our single player game
+		AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
+		UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() GhostCharacter exists"));
 
         if (PlayerController)
         {
+            PlayerController->UnPossess();
+            PlayerController->Possess(GhostCharacter);     // Possess the ghost character again
+
+            PlayerController->PlayerCharacter = GhostCharacter; // Possess the ghost character again (used for the player controller/ input functions)
+            PlayerController->SwitchInputMappingContext(GhostCharacter, 0);     // Switch input mapping back to ghost character
+            
             UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() has player controller"));
             GhostCharacter->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // Detach ghost player from possessed character
 
-            this->DashMovement(1);
-            GhostCharacter->DashMovement(-1);
-
-            GhostCharacter->SetActorHiddenInGame(false);    // Return the ghost to visibility and enable its collision
-            GhostCharacter->SetActorEnableCollision(true);
-
-
-            PlayerController->Possess(GhostCharacter);     // Possess the ghost character again
-
-            PlayerController->PlayerCharacter = GhostCharacter; // Possess the ghost character again
-            PlayerController->SwitchInputMappingContext(GhostCharacter, 0);     // Switch input mapping back to ghost character
-
-            GhostCharacter = nullptr;   // Clear the GhostCharacter reference so that this if statement won't happen again unless someone is possessed
-
         }
-    }
+
+	    GhostCharacter->DashMovement(-1);
+
+	    GhostCharacter->SetActorHiddenInGame(false);    // Return the ghost to visibility and enable its collision
+	    GhostCharacter->SetActorEnableCollision(true);
+
+	    GhostCharacter = nullptr;   // Clear the GhostCharacter reference so that this if statement won't happen again unless someone is possessed
+
+	}
 }
 
 void APossessableCharacter::PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
