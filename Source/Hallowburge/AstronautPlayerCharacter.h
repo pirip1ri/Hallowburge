@@ -59,7 +59,7 @@ public:
 
 
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UProjectileSpawner* ProjectileSpawner;
 	UPROPERTY(EditAnywhere, Category = "Astronaut")
 	float ProjectileSpawnerCooldown = 0.3f;
