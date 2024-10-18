@@ -75,7 +75,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable) // for nav links
 	virtual void JumpFunction();
+	UFUNCTION(BlueprintCallable)
 	virtual void JumpFunctionEnd();
 	virtual void PossessionAbilityCheck(); // maybe add variable APossessableCharacter* OtherActor
 	virtual void ActionButton1() {}

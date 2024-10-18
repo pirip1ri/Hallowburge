@@ -44,6 +44,11 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	EJetpackState JetpackState = EJetpackState::Idle;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bIsAITryingToJump;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float DestinationDistanceFromSelf;
+
 
 	UPROPERTY(EditAnywhere, Category = "Astronaut")
 	TSubclassOf<AShootingProjectile> ShootingProjectile;
@@ -83,6 +88,7 @@ protected:
 	// Private helper to handle jetpack fuel consumption
 	void ConsumeJetpackFuel(float DeltaTime);
 	void RefuelJetpack(float DeltaTime);
+	void ControlAIJetpackMovement(float VectorDistance);
 
 
 	// Sets default values for this character's properties
@@ -100,6 +106,9 @@ public:
 
 	virtual void JumpFunction() override;
 	virtual void JumpFunctionEnd() override;
+
+	UFUNCTION(BlueprintCallable)
+	void SetStateToActive();
 
 	virtual void ActionButton1() override;
 	virtual void ActionButton1End() override;

@@ -82,6 +82,11 @@ void AAstronautPlayerCharacter::Tick(float DeltaTime)
         // Do nothing when idle
         break;
     }
+
+    if (bIsAITryingToJump)
+    {
+        ControlAIJetpackMovement(DestinationDistanceFromSelf);
+    }
 }
 
 void AAstronautPlayerCharacter::Shoot()
@@ -151,6 +156,12 @@ void AAstronautPlayerCharacter::JumpFunctionEnd()
     }
 }
 
+void AAstronautPlayerCharacter::SetStateToActive()
+{
+    JetpackActive();
+    bIsAITryingToJump = true;
+}
+
 void AAstronautPlayerCharacter::ActionButton1()
 {
     ChargingState = EChargingShotState::Charging;
@@ -216,5 +227,13 @@ void AAstronautPlayerCharacter::RefuelJetpack(float DeltaTime)
         {
             JetpackState = EJetpackState::Idle;
         }
+    }
+}
+
+void AAstronautPlayerCharacter::ControlAIJetpackMovement(float VectorDistance)
+{
+    if (VectorDistance >= 280.0f || VectorDistance <= 30.0f)
+    {
+        JumpFunctionEnd();
     }
 }
