@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HealthComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
@@ -67,6 +68,8 @@ public:
 	TSoftObjectPtr<UInputMappingContext> InputMapping;
 
 
+	UHealthComponent* HealthComponent;
+
 	// Functions //
 
 	// Sets default values for this character's properties
@@ -79,6 +82,7 @@ public:
 	virtual void JumpFunction();
 	UFUNCTION(BlueprintCallable)
 	virtual void JumpFunctionEnd();
+	UFUNCTION(BlueprintCallable)
 	virtual void PossessionAbilityCheck(); // maybe add variable APossessableCharacter* OtherActor
 	virtual void ActionButton1() {}
 	virtual void ActionButton2() {}
@@ -95,4 +99,8 @@ protected:
 	void DashMovement(int PositiveNegativeDirection);
 	void DashMovementEnd();
 	virtual void PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
+
+public:
+	UFUNCTION(BlueprintNativeEvent, Category = "Health")
+	void OnDeath();
 };

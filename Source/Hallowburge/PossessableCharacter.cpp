@@ -10,8 +10,7 @@ APossessableCharacter::APossessableCharacter()
 {
     // Create a collision box that will deal with any collision logic
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
-    CollisionBox->SetupAttachment(RootComponent); // Attach to the root component
-    CollisionBox->SetBoxExtent(FVector(50.0f, 50.0f, 150.0f)); // Default size
+    CollisionBox->SetBoxExtent(FVector(20.0f, 20.0f, 150.0f)); // Default size
     CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable query - to detect overlaps 
     CollisionBox->SetCollisionObjectType(ECC_Pawn);  // Set this box as a Pawn type for possession checks
     CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -21,7 +20,6 @@ APossessableCharacter::APossessableCharacter()
     
     // Create a Spring Arm component and attach it to the character's root component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    SpringArm->SetupAttachment(CollisionBox);
     SpringArm->TargetArmLength = 300.0f;
     SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -29,8 +27,6 @@ APossessableCharacter::APossessableCharacter()
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
     Camera->bUsePawnControlRotation = true;
-
-
 
     // Disable character rotation by controller pitch
     bUseControllerRotationYaw = true;
@@ -125,8 +121,8 @@ void APossessableCharacter::PossessionAbilityCheck()
             GhostCharacter->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // Detach ghost player from possessed character
 
         }
-
-	    GhostCharacter->DashMovement(-1);
+        this->DashMovement(0.5);
+	    GhostCharacter->DashMovement(-0.5);
 
 	    GhostCharacter->SetActorHiddenInGame(false);    // Return the ghost to visibility and enable its collision
 	    GhostCharacter->SetActorEnableCollision(true);
@@ -139,5 +135,10 @@ void APossessableCharacter::PossessionAbilityCheck()
 void APossessableCharacter::PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::ChangePlayerCharacter called for"));
+}
+
+void APossessableCharacter::OnDeath_Implementation()
+{
+
 }
 

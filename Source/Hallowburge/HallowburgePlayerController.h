@@ -8,6 +8,16 @@
 #include "GameFramework/PlayerController.h"
 #include "HallowburgePlayerController.generated.h"
 
+UENUM(BlueprintType)
+enum class EPlayersCurrentPlayState : uint8
+{
+	None	UMETA(DisplayName = "None"),
+	Playing	UMETA(DisplayName = "Playing"),
+	InMenus	UMETA(DisplayName = "InMenus"),
+	Dead	UMETA(DisplayName = "Dead")
+};
+
+
 UCLASS()
 class HALLOWBURGE_API AHallowburgePlayerController : public APlayerController
 {
@@ -19,6 +29,9 @@ public:
 
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 	APossessableCharacter* PlayerCharacter = Cast<APossessableCharacter>(GetCharacter());
+
+	UPROPERTY()
+	EPlayersCurrentPlayState PlayersCurrentPlayState = EPlayersCurrentPlayState::None;
 
 	UEnhancedInputLocalPlayerSubsystem* EnhancedInputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 
@@ -86,4 +99,10 @@ protected:
 	void Button1ActionEnd();
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void Button2ActionEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	EPlayersCurrentPlayState GetPlayersCurrentPlayState();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetPlayersCurrentPlayState(EPlayersCurrentPlayState PlayersPlayState);
 };

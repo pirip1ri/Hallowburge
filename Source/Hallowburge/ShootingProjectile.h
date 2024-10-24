@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DamageComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -17,7 +18,7 @@ class HALLOWBURGE_API AShootingProjectile : public AActor
 	GENERATED_BODY()
 public:
 	// Parameters //
-
+	UDamageComponent* DamageComponent;
 
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* ProjectileMesh;
@@ -56,6 +57,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void OnHit(UPrimitiveComponent* HitComp, APossessableCharacter* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	// OnHit Component isn't working, I'm going to try calling it in blueprints
 	 //void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

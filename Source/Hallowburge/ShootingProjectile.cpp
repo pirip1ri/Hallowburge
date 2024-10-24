@@ -9,7 +9,7 @@ AShootingProjectile::AShootingProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
+	
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	RootComponent = CollisionBox; // Assigned as root component
 	//CollisionBox->OnComponentHit.AddDynamic(this, &AShootingProjectile::OnHit);
@@ -41,22 +41,3 @@ void AShootingProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-//void AShootingProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-//{
-//	UE_LOG(LogTemp, Display, TEXT("AShootingProjectile::OnHit called"));
-//	if (RadialForce)
-//	{
-//		UE_LOG(LogTemp, Display, TEXT("AShootingProjectile::OnHit radial force applied"));
-//		RadialForce->FireImpulse();
-//	}
-//		
-//	UE_LOG(LogTemp, Display, TEXT("AShootingProjectile::OnHit calls a delay for destruction"));
-//	
-//	if (ImpactParticleSystem)
-//	{
-//		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticleSystem, Hit.ImpactPoint, FRotator::ZeroRotator, true);
-//	}
-//
-//	Destroy();
-//}

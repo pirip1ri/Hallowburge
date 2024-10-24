@@ -33,6 +33,7 @@ void AHallowburgePlayerController::BeginPlay()
             UE_LOG(LogTemp, Warning, TEXT("Controlled Pawn is not of type APossessableCharacter!"));
         }
     }
+    SetPlayersCurrentPlayState(EPlayersCurrentPlayState::Playing);
 }
 
 void AHallowburgePlayerController::Tick(float DeltaTime)
@@ -171,4 +172,14 @@ void AHallowburgePlayerController::Button2ActionEnd()
     {
         PlayerCharacter->ActionButton2End();
     }
+}
+
+EPlayersCurrentPlayState AHallowburgePlayerController::GetPlayersCurrentPlayState()
+{
+    return PlayersCurrentPlayState;
+}
+
+void AHallowburgePlayerController::SetPlayersCurrentPlayState(EPlayersCurrentPlayState PlayersPlayState)
+{
+    PlayersCurrentPlayState = PlayersPlayState;
 }

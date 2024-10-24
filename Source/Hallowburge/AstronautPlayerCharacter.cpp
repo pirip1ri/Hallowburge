@@ -126,10 +126,6 @@ void AAstronautPlayerCharacter::JumpFunction()
             Jump();
             break;
 
-        case EJetpackState::Regenerating:
-            // Jetpack is inactive when refueling, so cannot do anything but stick with the regular jump logic
-            Jump();
-            break;
         default:
             // Jetpack is ready to use!
             JetpackActive();
