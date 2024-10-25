@@ -68,6 +68,7 @@ void AGhostPlayerCharacter::PossessEnemyCharacter(UPrimitiveComponent* Overlappe
 			if (PlayerController)
 			{
 				PlayerController->UnPossess();
+				OnPossessCharacterInScene(PossessableCharacter); // for the AI to work while we possess it
 				PlayerController->Possess(PossessableCharacter); // Possess the new character
 
 				FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true); 

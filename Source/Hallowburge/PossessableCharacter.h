@@ -96,11 +96,17 @@ protected:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void DashMovement(int PositiveNegativeDirection);
+	void DashMovement(float PositiveNegativeDirection);
 	void DashMovementEnd();
 	virtual void PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
 	void OnDeath();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Possession")
+	void OnPossessCharacterInScene(APossessableCharacter* PossessedCharacter);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Possession")
+	void OnUnpossessCharacterInScene(APossessableCharacter* PossessedCharacter);
 };

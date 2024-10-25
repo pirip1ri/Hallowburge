@@ -10,6 +10,7 @@ APossessableCharacter::APossessableCharacter()
 {
     // Create a collision box that will deal with any collision logic
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+    CollisionBox->SetupAttachment(RootComponent);
     CollisionBox->SetBoxExtent(FVector(20.0f, 20.0f, 150.0f)); // Default size
     CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable query - to detect overlaps 
     CollisionBox->SetCollisionObjectType(ECC_Pawn);  // Set this box as a Pawn type for possession checks
@@ -20,6 +21,7 @@ APossessableCharacter::APossessableCharacter()
     
     // Create a Spring Arm component and attach it to the character's root component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(CollisionBox);
     SpringArm->TargetArmLength = 300.0f;
     SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -55,7 +57,7 @@ void APossessableCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
-void APossessableCharacter::DashMovement(int PositiveNegativeDirection)
+void APossessableCharacter::DashMovement(float PositiveNegativeDirection)
 {
     if (bCanDash)
     {
@@ -112,6 +114,7 @@ void APossessableCharacter::PossessionAbilityCheck()
         if (PlayerController)
         {
             PlayerController->UnPossess();
+            OnUnpossessCharacterInScene(this);  // for the AI to go back to normal after we unpossess
             PlayerController->Possess(GhostCharacter);     // Possess the ghost character again
 
             PlayerController->PlayerCharacter = GhostCharacter; // Possess the ghost character again (used for the player controller/ input functions)
@@ -135,6 +138,16 @@ void APossessableCharacter::PossessionAbilityCheck()
 void APossessableCharacter::PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::ChangePlayerCharacter called for"));
+}
+
+void APossessableCharacter::OnPossessCharacterInScene_Implementation(APossessableCharacter* PossessedCharacter)
+{
+
+}
+
+void APossessableCharacter::OnUnpossessCharacterInScene_Implementation(APossessableCharacter* PossessedCharacter)
+{
+
 }
 
 void APossessableCharacter::OnDeath_Implementation()
