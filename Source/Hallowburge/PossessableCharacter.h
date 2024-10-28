@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "AIController.h"
 #include "Components/BoxComponent.h"
 #include "PossessableCharacter.generated.h"
 
@@ -28,6 +29,8 @@ class HALLOWBURGE_API APossessableCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+
+
 	// Parameters //
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -45,6 +48,9 @@ protected:
 public:
 	AGhostPlayerCharacter* GhostCharacter = nullptr;
 
+
+
+
 	// Objects - Animation stuff //
 
 protected:
@@ -52,11 +58,12 @@ protected:
 	float CharacterSpeed;
 	float MaxWalkSpeed = 600.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bCanDash;
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float DashCooldown;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float DashDistance = 1800.0f;
 	FTimerHandle DashCooldownTimerHandle;
 
@@ -66,9 +73,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TSoftObjectPtr<UInputMappingContext> InputMapping;
-
-
-	UHealthComponent* HealthComponent;
 
 	// Functions //
 

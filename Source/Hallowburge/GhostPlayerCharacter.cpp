@@ -3,6 +3,7 @@
 
 #include "GhostPlayerCharacter.h"
 #include "HallowburgePlayerController.h"
+#include "AIController.h"
 #include "HallowburgeSandboxGameModeBase.h"
 
 // Sets default values
@@ -67,8 +68,17 @@ void AGhostPlayerCharacter::PossessEnemyCharacter(UPrimitiveComponent* Overlappe
 
 			if (PlayerController)
 			{
-				PlayerController->UnPossess();
+				if (PossessableCharacter->GetController())
+				{
+					AIControllerStash = Cast<AAIController>(PossessableCharacter->GetController());
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PossessableCharacter or its controller is null at stash time."));
+				}
+
 				OnPossessCharacterInScene(PossessableCharacter); // for the AI to work while we possess it
+				PlayerController->UnPossess();
 				PlayerController->Possess(PossessableCharacter); // Possess the new character
 
 				FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true); 

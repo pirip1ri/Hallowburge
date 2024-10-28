@@ -4,6 +4,7 @@
 #include "PossessableCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "HallowburgePlayerController.h"
+#include "GameFramework/Actor.h"
 #include "GhostPlayerCharacter.h"
 
 APossessableCharacter::APossessableCharacter()
@@ -104,23 +105,33 @@ void APossessableCharacter::JumpFunctionEnd()
 
 void APossessableCharacter::PossessionAbilityCheck()
 {
-	UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() called for"));
 	if (GhostCharacter)
 	{
 		// Get the player controller - should work for our single player game
 		AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
-		UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() GhostCharacter exists"));
 
         if (PlayerController)
         {
             PlayerController->UnPossess();
-            OnUnpossessCharacterInScene(this);  // for the AI to go back to normal after we unpossess
+
+            if (GhostCharacter->AIControllerStash.IsValid())
+            {
+                GhostCharacter->AIControllerStash->Possess(this);
+                UE_LOG(LogTemp, Display, TEXT("AIController successfully reattached to PossessableCharacter"));
+                GhostCharacter->AIControllerStash = nullptr;
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("AIControllerStash is null or invalid in PossessionAbilityCheck!"));
+            }
+
             PlayerController->Possess(GhostCharacter);     // Possess the ghost character again
+
+            OnUnpossessCharacterInScene(GhostCharacter);
 
             PlayerController->PlayerCharacter = GhostCharacter; // Possess the ghost character again (used for the player controller/ input functions)
             PlayerController->SwitchInputMappingContext(GhostCharacter, 0);     // Switch input mapping back to ghost character
             
-            UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessionAbilityCheck() has player controller"));
             GhostCharacter->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // Detach ghost player from possessed character
 
         }

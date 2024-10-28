@@ -18,6 +18,10 @@ class HALLOWBURGE_API AGhostPlayerCharacter : public APossessableCharacter
 
 
 	// Objects // 
+public:
+	UPROPERTY()
+	TWeakObjectPtr<AAIController> AIControllerStash;
+
 protected:
 	bool bCanPossess = true;
 	FTimerHandle PossessionProgressTimerHandle;
