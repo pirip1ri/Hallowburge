@@ -94,10 +94,3 @@ Saved/
 *.VC.db
 .vs/
 
-# Ignore third-person pack assets
-Content/__ExternalObjects__/ThirdPerson/
-Content/__ExternalActors__/ThirdPerson/
-Content/ThirdPerson/
-Content/LevelPrototyping/
-Content/Characters/Mannequin_UE4/
-Content/Characters/Mannequins/
