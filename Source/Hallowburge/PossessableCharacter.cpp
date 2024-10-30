@@ -103,7 +103,7 @@ void APossessableCharacter::JumpFunctionEnd()
     StopJumping();
 }
 
-void APossessableCharacter::PossessionAbilityCheck()
+void APossessableCharacter::PossessiveDashStart()
 {
 	if (GhostCharacter)
 	{
@@ -112,6 +112,8 @@ void APossessableCharacter::PossessionAbilityCheck()
 
         if (PlayerController)
         {
+            GhostCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // enable movement again for the ghost
+            
             PlayerController->UnPossess();
 
             if (GhostCharacter->AIControllerStash.IsValid())
@@ -146,12 +148,12 @@ void APossessableCharacter::PossessionAbilityCheck()
 	}
 }
 
-void APossessableCharacter::PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APossessableCharacter::PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::ChangePlayerCharacter called for"));
 }
 
-void APossessableCharacter::OnPossessCharacterInScene_Implementation(APossessableCharacter* PossessedCharacter)
+void APossessableCharacter::OnPossessCharacterInScene_Implementation(APossessableCharacter* PossessedCharacter, AHallowburgePlayerController* PlayerController)
 {
 
 }

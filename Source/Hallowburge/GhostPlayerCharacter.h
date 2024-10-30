@@ -36,10 +36,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void PossessionAbilityCheck() override;
+	virtual void PossessiveDashStart() override;
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
-	virtual void PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-	void EndPossessionCheck();
+	virtual void PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	UFUNCTION(BlueprintCallable, Category = "Ghost")
+	void ChangeControlledCharacter(AHallowburgePlayerController* PlayerController, APossessableCharacter* PossessedCharacter);
+	void PossessiveDashEnd();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

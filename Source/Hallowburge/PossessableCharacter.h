@@ -23,6 +23,7 @@ enum class EPlayerPawn : uint8
 
 class AHallowburgeSandboxGameModeBase;
 class AGhostPlayerCharacter;
+class AAHallowburgePlayerController;
 
 UCLASS()
 class HALLOWBURGE_API APossessableCharacter : public ACharacter
@@ -87,7 +88,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void JumpFunctionEnd();
 	UFUNCTION(BlueprintCallable)
-	virtual void PossessionAbilityCheck(); // maybe add variable APossessableCharacter* OtherActor
+	virtual void PossessiveDashStart(); // maybe add variable APossessableCharacter* OtherActor
 	virtual void ActionButton1() {}
 	virtual void ActionButton2() {}
 	virtual void ActionButton1End() {}
@@ -102,14 +103,14 @@ protected:
 
 	void DashMovement(float PositiveNegativeDirection);
 	void DashMovementEnd();
-	virtual void PossessEnemyCharacter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
+	virtual void PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
 	void OnDeath();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Possession")
-	void OnPossessCharacterInScene(APossessableCharacter* PossessedCharacter);
+	void OnPossessCharacterInScene(APossessableCharacter* PossessedCharacter, AHallowburgePlayerController* PlayerController);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Possession")
 	void OnUnpossessCharacterInScene(APossessableCharacter* PossessedCharacter);
