@@ -8,7 +8,15 @@
 #include "GameFramework/PlayerController.h"
 #include "GhostPlayerCharacter.generated.h"
 
-// Enum that checks what the player can do in any specific state
+UENUM()
+enum class EPunchState : uint8
+{
+	Idle			UMETA(DisplayName = "Idle"),
+	Charging        UMETA(DisplayName = "Charging"),
+	Cooldown		UMETA(DisplayName = "Cooldown")
+};
+
+
 
 UCLASS()
 class HALLOWBURGE_API AGhostPlayerCharacter : public APossessableCharacter
@@ -27,6 +35,12 @@ protected:
 	FTimerHandle PossessionProgressTimerHandle;
 	FVector StartPossessionLocation;
 
+	UPROPERTY(BlueprintReadOnly)
+	EPunchState PunchState = EPunchState::Idle;
+
+	float PunchChargeTime;
+
+
 	// Functions //
 
 	// Sets default values for this character's properties
@@ -37,11 +51,22 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void PossessiveDashStart() override;
+	virtual void ActionButton1() override;
+	virtual void ActionButton1End() override;
+
+
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	virtual void PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	void ChangeControlledCharacter(AHallowburgePlayerController* PlayerController, APossessableCharacter* PossessedCharacter);
+	
+	
 	void PossessiveDashEnd();
+	
+	void Punch();
+	void AirPunch();
+	void ChargedPunch();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

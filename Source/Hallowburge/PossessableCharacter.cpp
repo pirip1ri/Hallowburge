@@ -113,12 +113,12 @@ void APossessableCharacter::PossessiveDashStart()
         if (PlayerController)
         {
             GhostCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // enable movement again for the ghost
-            
             PlayerController->UnPossess();
 
             if (GhostCharacter->AIControllerStash.IsValid())
             {
                 GhostCharacter->AIControllerStash->Possess(this);
+                GetCharacterMovement()->bOrientRotationToMovement = false;
                 UE_LOG(LogTemp, Display, TEXT("AIController successfully reattached to PossessableCharacter"));
                 GhostCharacter->AIControllerStash = nullptr;
             }
@@ -129,14 +129,15 @@ void APossessableCharacter::PossessiveDashStart()
 
             PlayerController->Possess(GhostCharacter);     // Possess the ghost character again
 
-            OnUnpossessCharacterInScene(GhostCharacter);
-
             PlayerController->PlayerCharacter = GhostCharacter; // Possess the ghost character again (used for the player controller/ input functions)
             PlayerController->SwitchInputMappingContext(GhostCharacter, 0);     // Switch input mapping back to ghost character
             
             GhostCharacter->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // Detach ghost player from possessed character
 
+
+            OnUnpossessCharacterInScene(GhostCharacter);
         }
+        GetCharacterMovement()->bOrientRotationToMovement = true;
         this->DashMovement(0.5);
 	    GhostCharacter->DashMovement(-0.5);
 
@@ -144,7 +145,6 @@ void APossessableCharacter::PossessiveDashStart()
 	    GhostCharacter->SetActorEnableCollision(true);
 
 	    GhostCharacter = nullptr;   // Clear the GhostCharacter reference so that this if statement won't happen again unless someone is possessed
-
 	}
 }
 
