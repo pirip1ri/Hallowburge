@@ -2,27 +2,15 @@
 
 
 #include "PossessableCharacter.h"
-#include "Components/CapsuleComponent.h"
 #include "HallowburgePlayerController.h"
 #include "GameFramework/Actor.h"
 #include "GhostPlayerCharacter.h"
 
 APossessableCharacter::APossessableCharacter()
-{
-    // Create a collision box that will deal with any collision logic
-    CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
-    CollisionBox->SetupAttachment(RootComponent);
-    CollisionBox->SetBoxExtent(FVector(20.0f, 20.0f, 150.0f)); // Default size
-    CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable query - to detect overlaps 
-    CollisionBox->SetCollisionObjectType(ECC_Pawn);  // Set this box as a Pawn type for possession checks
-    CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-    CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // Overlap with possessable characters
-    CollisionBox->SetGenerateOverlapEvents(true);
-
-    
+{  
     // Create a Spring Arm component and attach it to the character's root component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    SpringArm->SetupAttachment(CollisionBox);
+    SpringArm->SetupAttachment(RootComponent);
     SpringArm->TargetArmLength = 300.0f;
     SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 

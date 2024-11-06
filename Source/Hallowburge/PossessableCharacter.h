@@ -3,13 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealthComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "AIController.h"
-#include "Components/BoxComponent.h"
 #include "PossessableCharacter.generated.h"
 
 
@@ -40,16 +37,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* Camera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
-	UBoxComponent* CollisionBox;
-
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 	EPlayerPawn PlayerPawn;
 	
 public:
 	AGhostPlayerCharacter* GhostCharacter = nullptr;
-
-
 
 
 	// Objects - Animation stuff //

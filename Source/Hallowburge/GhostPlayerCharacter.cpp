@@ -3,18 +3,37 @@
 
 #include "GhostPlayerCharacter.h"
 #include "HallowburgePlayerController.h"
+#include "HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
+#include "Components/CapsuleComponent.h"
 #include "HallowburgeSandboxGameModeBase.h"
 
 // Sets default values
 AGhostPlayerCharacter::AGhostPlayerCharacter()
 {
-    // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Create a collision box that will deal with any collision logic
+	PossessionCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("PossessionCapsule"));
+	PossessionCapsule->SetupAttachment(RootComponent);
+	PossessionCapsule->SetCapsuleHalfHeight(70.0f);
+	PossessionCapsule->SetCapsuleRadius(65.0f);
+	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable query - to detect overlaps 
+	PossessionCapsule->SetCollisionObjectType(ECC_Pawn);  // Set this box as a Pawn type for possession checks
+	PossessionCapsule->SetCollisionResponseToAllChannels(ECR_Ignore);
+	PossessionCapsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // Overlap with possessable characters
+	PossessionCapsule->SetGenerateOverlapEvents(true);
+	
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-    CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AGhostPlayerCharacter::PossessCharacterCheck);
+    PossessionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AGhostPlayerCharacter::PossessCharacterCheck);
 
-	PunchChargeTime = FMath::Clamp(PunchChargeTime, 0.0f, 0.7f);
+	RightHandCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandCollisionBox"));
+	RightHandCollisionBox->SetupAttachment(GetMesh(), TEXT("righthand"));
+	RightHandCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightHandCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AGhostPlayerCharacter::OnPunchOverlap);
+
+
+	PunchCooldown = FMath::Clamp(PunchCooldown, 0.0f, 0.7f);
 }
 
 // Called when the game starts or when spawned
@@ -35,18 +54,54 @@ void AGhostPlayerCharacter::BeginPlay()
 	PunchState = EPunchState::Idle;
 }
 
+// Called every frame
+void AGhostPlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// Calculate and update CharacterSpeed from movement - for animation
+	CharacterSpeed = GetVelocity().Size(); // Total velocity magnitude
+
+
+	switch (PunchState)
+	{
+	case EPunchState::Cooldown:
+		if (PunchCooldown > 0)
+		{
+			PunchCooldown -= DeltaTime;
+		}
+		else
+		{
+			PunchState = EPunchState::Idle;
+		}
+		break;
+	default:
+		// Do nothing when idle
+		break;
+	}
+}
+
+// Called to bind functionality to input
+void AGhostPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
 void AGhostPlayerCharacter::PossessiveDashStart()
 {
+	if (PunchState == EPunchState::Idle) // if the player is not punching
+	{
 		bCanPossess = true;
 		DashMovement(1);
 		GetWorld()->GetTimerManager().SetTimer(PossessionProgressTimerHandle, this, &AGhostPlayerCharacter::PossessiveDashEnd, 0.3f, false); // Check possession progress periodically
+	}
 }
 
 void AGhostPlayerCharacter::ActionButton1()
 {
 	if (!bCanPossess)
 	{
-		if (PunchState == EPunchState::Idle)
+		if (PunchState == EPunchState::Idle && PunchCooldown == 0.0f)
 		{
 			if (GetCharacterMovement()->IsFalling())
 			{
@@ -57,23 +112,22 @@ void AGhostPlayerCharacter::ActionButton1()
 				Punch();
 			}
 		}
-		PunchState = EPunchState::Charging;
 	}
 	else
 	{
 		PunchState = EPunchState::Idle;
-		PunchChargeTime = 0.0f;
+		PunchCooldown = 0.1f;
 	}
 }
 
 void AGhostPlayerCharacter::ActionButton1End()
 {
-	UE_LOG(LogTemp, Display, TEXT("%f, %f"), PunchChargeTime, PunchState);
-	if (PunchChargeTime >= 0.69f)
+	UE_LOG(LogTemp, Display, TEXT("%f, %f"), PunchCooldown, PunchState);
+	if (PunchCooldown >= 0.69f)
 	{
 		ChargedPunch();
 	}
-	else if (PunchChargeTime > 0.0f)
+	else if (PunchCooldown > 0.0f)
 	{
 
 	}
@@ -165,6 +219,8 @@ void AGhostPlayerCharacter::PossessiveDashEnd()
 void AGhostPlayerCharacter::Punch()
 {
 	UE_LOG(LogTemp, Display, TEXT("POW"));
+	PunchState = EPunchState::Punch;
+	PlayPunchMontage(PunchState);
 }
 
 void AGhostPlayerCharacter::AirPunch()
@@ -177,42 +233,63 @@ void AGhostPlayerCharacter::ChargedPunch()
 	UE_LOG(LogTemp, Display, TEXT("WALLOP"));
 }
 
-// Called every frame
-void AGhostPlayerCharacter::Tick(float DeltaTime)
+void AGhostPlayerCharacter::OnPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::Tick(DeltaTime);
-    // Calculate and update CharacterSpeed from movement - for animation
-    CharacterSpeed = GetVelocity().Size(); // Total velocity magnitude
-
-
-	switch (PunchState)
+	if (OtherActor && OtherActor != this)
 	{
-	case EPunchState::Charging:
-		PunchChargeTime += DeltaTime;
-	break;
+		// Define the forward direction and position in front of the character
+		FVector ForwardDirection = GetActorForwardVector();
+		FVector StartLocation = GetActorLocation() + ForwardDirection * 100.0f; // Adjust the distance in front of the character
+		float TraceRadius = 200.0f; // Adjust radius based on desired detection area
 
-	case EPunchState::Cooldown:
-		if (PunchChargeTime > 0)
-		{
-			PunchChargeTime -= DeltaTime;
-		}
-		else
-		{
-			PunchState = EPunchState::Idle;
-		}
-	break;
+		// Define the trace shape
+		FCollisionShape CollisionShape = FCollisionShape::MakeSphere(TraceRadius);
 
-	case EPunchState::Idle:
-	default:
-		// Do nothing when idle
-	break;
+		// Store hit results
+		TArray<FHitResult> HitResults;
+
+		// Perform the sphere trace to find overlapping components
+		bool bHit = GetWorld()->SweepMultiByChannel(
+			HitResults,
+			StartLocation,
+			StartLocation,
+			FQuat::Identity,
+			ECC_PhysicsBody, // Only collide with physics bodies
+			CollisionShape
+		);
+
+		if (bHit)
+		{
+			// Loop through each hit and apply force
+			for (const FHitResult& Hit : HitResults)
+			{
+				// Get the hit component
+				UPrimitiveComponent* HitComponent = Hit.GetComponent();
+
+				// Check if the component is valid and simulates physics
+				if (HitComponent && HitComponent->IsSimulatingPhysics())
+				{
+					// Calculate the direction of the force (forward direction of character)
+					FVector ForceDirection = ForwardDirection * 1000.0f; // Adjust force strength as needed
+
+					// Apply force to the component
+					HitComponent->AddForce(ForceDirection, NAME_None, true);
+				}
+			}
+		}
 	}
 }
 
-// Called to bind functionality to input
-void AGhostPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AGhostPlayerCharacter::EndPunch()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	PunchState = EPunchState::Idle;
+	PunchCooldown = 0.0f;
+}
+
+void AGhostPlayerCharacter::PlayPunchMontage_Implementation(EPunchState CurrentPunchState)
+{
 
 }
+
+
 
