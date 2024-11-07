@@ -2,6 +2,8 @@
 
 
 #include "HealthComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/DamageType.h"
 #include "PossessableCharacter.h"
 
 // Sets default values for this component's properties
@@ -22,19 +24,28 @@ void UHealthComponent::BeginPlay()
 
 }
 
-void UHealthComponent::TakeDamage(APossessableCharacter* DamagedActor, float Damage)
+void UHealthComponent::DeductHealth(APossessableCharacter* DamagedActor, float Damage)
 {
 	if (Damage <= 0 || CurrentHealth <= 0)
 	{
 		return;
 	}
-
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
 
 	if (CurrentHealth <= 0.0f)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Die, die die, die, die!")); 
 		DamagedActor->OnDeath();
+	}
+	UE_LOG(LogTemp, Display, TEXT("CurrentHealth: %f"), CurrentHealth);
+}
 
+void UHealthComponent::HandleCollisionDamage(AActor* CollidedActor, float Damage, AController* Controller, AActor* OffenseActor)
+{
+	if (CollidedActor && CollidedActor != OffenseActor)  // Ensure the other actor is valid and not self
+	{
+		UE_LOG(LogTemp, Display, TEXT("UHealthComponent::HandleCollisionDamage"));
+		// Apply damage
+		UGameplayStatics::ApplyDamage(CollidedActor, Damage, Controller, OffenseActor, DamageTypeClass);
 	}
 }

@@ -3,9 +3,9 @@
 
 #include "GhostPlayerCharacter.h"
 #include "HallowburgePlayerController.h"
-#include "HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
+#include "HealthComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "HallowburgeSandboxGameModeBase.h"
 
@@ -17,7 +17,7 @@ AGhostPlayerCharacter::AGhostPlayerCharacter()
 	PossessionCapsule->SetupAttachment(RootComponent);
 	PossessionCapsule->SetCapsuleHalfHeight(70.0f);
 	PossessionCapsule->SetCapsuleRadius(65.0f);
-	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable query - to detect overlaps 
+	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // Enable query - to detect overlaps 
 	PossessionCapsule->SetCollisionObjectType(ECC_Pawn);  // Set this box as a Pawn type for possession checks
 	PossessionCapsule->SetCollisionResponseToAllChannels(ECR_Ignore);
 	PossessionCapsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // Overlap with possessable characters
@@ -25,12 +25,26 @@ AGhostPlayerCharacter::AGhostPlayerCharacter()
 	
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-    PossessionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AGhostPlayerCharacter::PossessCharacterCheck);
+    PossessionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap);
 
 	RightHandCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightHandCollisionBox"));
 	RightHandCollisionBox->SetupAttachment(GetMesh(), TEXT("righthand"));
 	RightHandCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightHandCollisionBox->SetCollisionObjectType(ECollisionChannel::ECC_Pawn); // or whatever is appropriate for your game
+	RightHandCollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	RightHandCollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap); // Set specific channels to overlap
 	RightHandCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AGhostPlayerCharacter::OnPunchOverlap);
+
+
+	// Initialize the RadialForceComponent
+	RadialForceComponent = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComponent"));
+	RadialForceComponent->SetupAttachment(RightHandCollisionBox);
+	// Check if RadialForceComponent was successfully created before using it
+	if (RadialForceComponent)
+	{
+		RadialForceComponent->bIgnoreOwningActor = true;
+		RadialForceComponent->bImpulseVelChange = true;
+	}
 
 
 	PunchCooldown = FMath::Clamp(PunchCooldown, 0.0f, 0.7f);
@@ -72,6 +86,7 @@ void AGhostPlayerCharacter::Tick(float DeltaTime)
 		else
 		{
 			PunchState = EPunchState::Idle;
+			PunchCooldown = 0;
 		}
 		break;
 	default:
@@ -89,9 +104,11 @@ void AGhostPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 void AGhostPlayerCharacter::PossessiveDashStart()
 {
-	if (PunchState == EPunchState::Idle) // if the player is not punching
+	if (PunchState == EPunchState::Idle || PunchState == EPunchState::Cooldown) // if the player is not punching
 	{
+		PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		bCanPossess = true;
+		bIsHoldingDownPunchButton = false;
 		DashMovement(1);
 		GetWorld()->GetTimerManager().SetTimer(PossessionProgressTimerHandle, this, &AGhostPlayerCharacter::PossessiveDashEnd, 0.3f, false); // Check possession progress periodically
 	}
@@ -99,81 +116,101 @@ void AGhostPlayerCharacter::PossessiveDashStart()
 
 void AGhostPlayerCharacter::ActionButton1()
 {
-	if (!bCanPossess)
+	UCharacterMovementComponent* CharacterMovementSpeed = GetCharacterMovement();
+	CharacterMovementSpeed->MaxWalkSpeed = 300.0f;
+
+	if (!bIsHoldingDownPunchButton)
 	{
-		if (PunchState == EPunchState::Idle && PunchCooldown == 0.0f)
+		bIsHoldingDownPunchButton = true;
+		if (!bCanPossess)
 		{
-			if (GetCharacterMovement()->IsFalling())
+			if (PunchState == EPunchState::Idle && PunchCooldown == 0.0f)
 			{
-				AirPunch();
-			}
-			else
-			{
-				Punch();
+				if (GetCharacterMovement()->IsFalling())
+				{
+					AirPunch();
+				}
+				else
+				{
+					Punch();
+				}
 			}
 		}
+		else
+		{
+			PunchState = EPunchState::Idle;
+			PunchCooldown = 0.1f;
+		}
 	}
-	else
-	{
-		PunchState = EPunchState::Idle;
-		PunchCooldown = 0.1f;
-	}
+	
 }
 
 void AGhostPlayerCharacter::ActionButton1End()
 {
 	UE_LOG(LogTemp, Display, TEXT("%f, %f"), PunchCooldown, PunchState);
-	if (PunchCooldown >= 0.69f)
+	if (PunchState == EPunchState::Charging)
 	{
 		ChargedPunch();
 	}
-	else if (PunchCooldown > 0.0f)
+	else
 	{
-
+		bIsHoldingDownPunchButton = false;
 	}
-
-	PunchState = EPunchState::Cooldown; // Set to cooldown only if a punch occurred
 }
 
-void AGhostPlayerCharacter::PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Step 1: Check if the ghost Can Possess
-	if (!bCanPossess)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Cannot possess enemy")); 
-		return;
-	}
-
-	// Step 2: Possess Target
-	// Check if the OtherActor is valid and is not this GhostPlayerCharacter
 	if (OtherActor && OtherActor != this)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(PossessionProgressTimerHandle);
-		PossessiveDashEnd(); // set the bCanPossess boolean immediately to false
-
-
-		// Try to cast the OtherActor to a possessable character
-		APossessableCharacter* PossessableCharacter = Cast<APossessableCharacter>(OtherActor);
-
-		if (PossessableCharacter)  // If the cast was successful
+		if (bIsHoldingDownPunchButton)
 		{
+			DamageOtherActor(OtherActor);
+		}
 
-			// Get the player controller - should work for our single player game
-			AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
+		else if (bCanPossess)
+		{
+			// Step 1: Check if the ghost Can Possess
+
+			// Step 2: Possess Target
+			// Check if the OtherActor is valid and is not this GhostPlayerCharacter
+
+			GetWorld()->GetTimerManager().ClearTimer(PossessionProgressTimerHandle);
+			PossessiveDashEnd(); // set the bCanPossess boolean immediately to false
 
 
-			if (PlayerController)
+			// Try to cast the OtherActor to a possessable character
+			APossessableCharacter* PossessableCharacter = Cast<APossessableCharacter>(OtherActor);
+
+			if (PossessableCharacter)  // If the cast was successful
 			{
-				// Smoke and Mirrors:
-				this->SetActorHiddenInGame(true);  // Make the ghost invisible
-				this->GetCharacterMovement()->SetMovementMode(MOVE_None); // disable any character movement
-				this->SetActorEnableCollision(false);  // Disable collisions for the ghost
-				DisableInput(PlayerController);
-				OnPossessCharacterInScene(PossessableCharacter, PlayerController); // AI and camera functionality called at in blueprints
 
-				PossessableCharacter->GhostCharacter = this; // set the ghost character variable to this, so that when the player wants to unpossess, the code can return to this specific ghost in the level
+				// Get the player controller - should work for our single player game
+				AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
+
+
+				if (PlayerController)
+				{
+					// Smoke and Mirrors:
+					this->SetActorHiddenInGame(true);  // Make the ghost invisible
+					this->GetCharacterMovement()->SetMovementMode(MOVE_None); // disable any character movement
+					this->SetActorEnableCollision(false);  // Disable collisions for the ghost
+					DisableInput(PlayerController);
+					OnPossessCharacterInScene(PossessableCharacter, PlayerController); // AI and camera functionality called at in blueprints
+
+					PossessableCharacter->GhostCharacter = this; // set the ghost character variable to this, so that when the player wants to unpossess, the code can return to this specific ghost in the level
+				}
 			}
 		}
+
+		else
+		{
+			return;
+		}
+	}
+
+	else
+	{
+		return;
 	}
 }
 
@@ -214,6 +251,7 @@ void AGhostPlayerCharacter::PossessiveDashEnd()
 {
 	bCanPossess = false;  // Disable possession after the dash ends
 	UE_LOG(LogTemp, Display, TEXT("CanPosess is set to false"));
+	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AGhostPlayerCharacter::Punch()
@@ -231,52 +269,18 @@ void AGhostPlayerCharacter::AirPunch()
 void AGhostPlayerCharacter::ChargedPunch()
 {
 	UE_LOG(LogTemp, Display, TEXT("WALLOP"));
+	// Charged Punch logic
+	PunchState = EPunchState::SpinAttack;
+	PlayPunchMontage(PunchState);
 }
 
 void AGhostPlayerCharacter::OnPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Display, TEXT("AGhostPlayerCharacter::OnPunchOverlap 1"));
 	if (OtherActor && OtherActor != this)
 	{
-		// Define the forward direction and position in front of the character
-		FVector ForwardDirection = GetActorForwardVector();
-		FVector StartLocation = GetActorLocation() + ForwardDirection * 100.0f; // Adjust the distance in front of the character
-		float TraceRadius = 200.0f; // Adjust radius based on desired detection area
-
-		// Define the trace shape
-		FCollisionShape CollisionShape = FCollisionShape::MakeSphere(TraceRadius);
-
-		// Store hit results
-		TArray<FHitResult> HitResults;
-
-		// Perform the sphere trace to find overlapping components
-		bool bHit = GetWorld()->SweepMultiByChannel(
-			HitResults,
-			StartLocation,
-			StartLocation,
-			FQuat::Identity,
-			ECC_PhysicsBody, // Only collide with physics bodies
-			CollisionShape
-		);
-
-		if (bHit)
-		{
-			// Loop through each hit and apply force
-			for (const FHitResult& Hit : HitResults)
-			{
-				// Get the hit component
-				UPrimitiveComponent* HitComponent = Hit.GetComponent();
-
-				// Check if the component is valid and simulates physics
-				if (HitComponent && HitComponent->IsSimulatingPhysics())
-				{
-					// Calculate the direction of the force (forward direction of character)
-					FVector ForceDirection = ForwardDirection * 1000.0f; // Adjust force strength as needed
-
-					// Apply force to the component
-					HitComponent->AddForce(ForceDirection, NAME_None, true);
-				}
-			}
-		}
+		UE_LOG(LogTemp, Display, TEXT("AGhostPlayerCharacter::OnPunchOverlap 2"));
+		DamageOtherActor(OtherActor);
 	}
 }
 
@@ -284,6 +288,29 @@ void AGhostPlayerCharacter::EndPunch()
 {
 	PunchState = EPunchState::Idle;
 	PunchCooldown = 0.0f;
+	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AGhostPlayerCharacter::DamageOtherActor(AActor* OtherActor)
+{
+	if (OtherActor)
+	{
+		UE_LOG(LogTemp, Log, TEXT("DamageOtherActor called on %s"), *OtherActor->GetName());
+		UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
+		if (HealthComponent)
+		{
+			HealthComponent->HandleCollisionDamage(OtherActor, BaseDamage, GetController(), this);  // Ensure this function handles nulls correctly
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DamageOtherActor: No HealthComponent found on %s"), *OtherActor->GetName());
+		}
+	}
+	// Set the strength of the radial impulse
+	RadialForceComponent->ImpulseStrength = RadialForceStrength;
+
+	// Fire the radial impulse
+	RadialForceComponent->FireImpulse();
 }
 
 void AGhostPlayerCharacter::PlayPunchMontage_Implementation(EPunchState CurrentPunchState)

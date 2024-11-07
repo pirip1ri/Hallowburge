@@ -17,7 +17,10 @@ public:
 	UHealthComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void TakeDamage(class APossessableCharacter* DamagedActor, float Damage);
+	void DeductHealth(class APossessableCharacter* DamagedActor, float Damage);
+
+	UFUNCTION()
+	void HandleCollisionDamage(AActor* CollidedActor, float Damage, AController* Controller, AActor* OffenseActor);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth;
@@ -28,4 +31,6 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	TSubclassOf<UDamageType> DamageTypeClass;  // Damage type (can be set in the editor)
 };

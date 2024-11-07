@@ -1,13 +1,13 @@
-
+// words
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "PossessableCharacter.h"
 #include "Components/BoxComponent.h"
 #include "AIController.h"
 #include "GameFramework/PlayerController.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 #include "GhostPlayerCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -34,26 +34,34 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
 	UCapsuleComponent* PossessionCapsule;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Input")
+	bool bIsHoldingDownPunchButton = false;
+
 protected:
 	bool bCanPossess = true;
 	FTimerHandle PossessionProgressTimerHandle;
 	FVector StartPossessionLocation;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
 	UBoxComponent* RightHandCollisionBox;
+
 
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
 	EPunchState PunchState = EPunchState::Idle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 	float PunchCooldown;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float BaseDamage = 2.0f;  // Base damage to apply
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float RadialForceStrength = 100.0f;  // Strength of the radial force to apply
+	UPROPERTY(VisibleAnywhere, Category = "Damage")
+	URadialForceComponent* RadialForceComponent;
 
 	// Functions //
 
 	// Sets default values for this character's properties
 	AGhostPlayerCharacter();
-
-protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -63,22 +71,25 @@ protected:
 
 
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
-	virtual void PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	virtual void OnPossessionOrSpecialPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	void ChangeControlledCharacter(AHallowburgePlayerController* PlayerController, APossessableCharacter* PossessedCharacter);
-	
 	
 	void PossessiveDashEnd();
 	
 	void Punch();
 	void AirPunch();
 	void ChargedPunch();
+	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	void OnPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	void EndPunch();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Ghost")
 	void PlayPunchMontage(EPunchState CurrentPunchState);
+
+	UFUNCTION()
+	void DamageOtherActor(AActor* OtherActor);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

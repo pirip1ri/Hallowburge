@@ -4,6 +4,7 @@
 #include "DamageComponent.h"
 #include "GameFramework/Actor.h"
 #include "HealthComponent.h"
+#include "DamageComponent.h"
 #include "PossessableCharacter.h"
 
 // Sets default values for this component's properties
@@ -24,7 +25,7 @@ void UDamageComponent::ApplyDamage(APossessableCharacter* Target)
 	UHealthComponent* HealthComp = Target->FindComponentByClass<UHealthComponent>();
 	if (HealthComp)
 	{
-		HealthComp->TakeDamage(Target, DamageAmount);
+
 	}
 }
 

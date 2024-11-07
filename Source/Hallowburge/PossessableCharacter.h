@@ -53,6 +53,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bCanDash;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float DashCooldown;
@@ -95,7 +96,7 @@ protected:
 
 	void DashMovement(float PositiveNegativeDirection);
 	void DashMovementEnd();
-	virtual void PossessCharacterCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
+	virtual void OnPossessionOrSpecialPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); // maybe add variable APossessableCharacter* TargetCharachter
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
