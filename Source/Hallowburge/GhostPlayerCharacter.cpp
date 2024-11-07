@@ -116,14 +116,13 @@ void AGhostPlayerCharacter::PossessiveDashStart()
 
 void AGhostPlayerCharacter::ActionButton1()
 {
-	UCharacterMovementComponent* CharacterMovementSpeed = GetCharacterMovement();
-	CharacterMovementSpeed->MaxWalkSpeed = 300.0f;
-
 	if (!bIsHoldingDownPunchButton)
 	{
 		bIsHoldingDownPunchButton = true;
 		if (!bCanPossess)
 		{
+			UCharacterMovementComponent* CharacterMovementSpeed = GetCharacterMovement();
+			CharacterMovementSpeed->MaxWalkSpeed = 400.0f;
 			if (PunchState == EPunchState::Idle && PunchCooldown == 0.0f)
 			{
 				if (GetCharacterMovement()->IsFalling())
@@ -264,6 +263,8 @@ void AGhostPlayerCharacter::Punch()
 void AGhostPlayerCharacter::AirPunch()
 {
 	UE_LOG(LogTemp, Display, TEXT("BAM"));
+	PunchState = EPunchState::AirAttack;
+	PlayPunchMontage(PunchState);
 }
 
 void AGhostPlayerCharacter::ChargedPunch()
