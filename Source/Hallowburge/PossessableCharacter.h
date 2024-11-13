@@ -58,12 +58,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float DashCooldown;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
-	float DashDistance = 1800.0f;
+	float DashDistance = 800.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	float DashUpwardDistance = 200.0f;  // Adjust as needed
 	FTimerHandle DashCooldownTimerHandle;
-
-	// For Animations
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* DashMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TSoftObjectPtr<UInputMappingContext> InputMapping;
@@ -81,7 +79,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void JumpFunctionEnd();
 	UFUNCTION(BlueprintCallable)
-	virtual void PossessiveDashStart(); // maybe add variable APossessableCharacter* OtherActor
+	virtual void PossessiveDashCall(); // maybe add variable APossessableCharacter* OtherActor
 	virtual void ActionButton1() {}
 	virtual void ActionButton2() {}
 	virtual void ActionButton1End() {}

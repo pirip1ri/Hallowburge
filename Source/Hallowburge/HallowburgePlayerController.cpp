@@ -138,7 +138,7 @@ void AHallowburgePlayerController::PossessionAbilityCheck()
     if (PlayerCharacter)
     {
         
-        PlayerCharacter->PossessiveDashStart();
+        PlayerCharacter->PossessiveDashCall();
     }
 }
 

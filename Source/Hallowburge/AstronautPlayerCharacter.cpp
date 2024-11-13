@@ -95,7 +95,7 @@ void AAstronautPlayerCharacter::Shoot()
     {
         float ProjectileSpeed = FMath::GetMappedRangeValueClamped(FVector2D(MinChargeTime, MaxChargeTime), FVector2D(MinProjectileSpeed, MaxProjectileSpeed), ChargeTime);
         ProjectileSpawner->SpawnProjectile(ShootingProjectile, ProjectileSpeed);
-        UE_LOG(LogTemp, Display, TEXT("Projectile Speed: %f"), ProjectileSpeed);
+        //UE_LOG(LogTemp, Display, TEXT("Projectile Speed: %f"), ProjectileSpeed);
 
         // Start cooldown before next shot can be fired
         bCanShoot = false;

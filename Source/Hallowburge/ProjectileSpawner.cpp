@@ -19,18 +19,22 @@ void UProjectileSpawner::SpawnProjectile(TSubclassOf<AShootingProjectile> Shooti
     FRotator SpawnRotation = GetComponentRotation(); // get spawner rotation (for aim)
 
     AShootingProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AShootingProjectile>(ShootingProjectile, SpawnLocation, SpawnRotation); // spawn the projectile
-    SpawnedProjectile->SetLifeSpan(3.0f);
-
-    if (SpawnedProjectile)
+    // if spawn succeed
+    if (SpawnedProjectile != nullptr)
     {
-        APawn* OwnerPawn = Cast<APawn>(GetOwner()); // get pawn
-        if (OwnerPawn && OwnerPawn->GetController()) // if there is a pawn and a controller
-        {
-            FRotator ControlRotation = OwnerPawn->GetController()->GetControlRotation(); 
-            FVector ShotDirection = ControlRotation.Vector(); // get the direction of where the camera is looking
+        SpawnedProjectile->SetLifeSpan(3.0f);
 
-            // Apply velocity to the projectile in the direction the player is aiming
-            SpawnedProjectile->ProjectileMovementComponent->Velocity = ShotDirection * ChargeBoost;
+        if (SpawnedProjectile)
+        {
+            APawn* OwnerPawn = Cast<APawn>(GetOwner()); // get pawn
+            if (OwnerPawn && OwnerPawn->GetController()) // if there is a pawn and a controller
+            {
+                FRotator ControlRotation = OwnerPawn->GetController()->GetControlRotation();
+                FVector ShotDirection = ControlRotation.Vector(); // get the direction of where the camera is looking
+
+                // Apply velocity to the projectile in the direction the player is aiming
+                SpawnedProjectile->ProjectileMovementComponent->Velocity = ShotDirection * ChargeBoost;
+            }
         }
     }
 }

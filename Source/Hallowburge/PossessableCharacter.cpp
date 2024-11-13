@@ -53,12 +53,9 @@ void APossessableCharacter::DashMovement(float PositiveNegativeDirection)
         UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::DashMovement bCanDash is true"));
         // Perform dash logic
         FVector ForwardDir = GetActorRotation().Vector();
-        LaunchCharacter(ForwardDir * DashDistance * PositiveNegativeDirection, true, true);
-
-        if (DashMontage)
-        {
-            PlayAnimMontage(DashMontage, 1, NAME_None);
-        }
+        FVector UpwardDir = FVector::UpVector;  // Character's up vector
+        FVector DashVector = (ForwardDir * DashDistance * PositiveNegativeDirection) + (UpwardDir * DashUpwardDistance);
+        LaunchCharacter(DashVector, true, true);
 
         // Set bCanDash to false to prevent further dashes
         bCanDash = false;
@@ -91,7 +88,7 @@ void APossessableCharacter::JumpFunctionEnd()
     StopJumping();
 }
 
-void APossessableCharacter::PossessiveDashStart()
+void APossessableCharacter::PossessiveDashCall()
 {
 	if (GhostCharacter)
 	{

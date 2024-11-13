@@ -34,12 +34,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
 	UCapsuleComponent* PossessionCapsule;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Input")
+	UPROPERTY(BlueprintReadWrite, Category = "Input")
 	bool bIsHoldingDownPunchButton = false;
 
 protected:
 	bool bCanPossess = true;
-	FTimerHandle PossessionProgressTimerHandle;
 	FVector StartPossessionLocation;
 
 
@@ -56,7 +55,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float RadialForceStrength = 100.0f;  // Strength of the radial force to apply
 	UPROPERTY(VisibleAnywhere, Category = "Damage")
-	URadialForceComponent* RadialForceComponent;
+	URadialForceComponent* RadialForceComponentFist;
+	UPROPERTY(VisibleAnywhere, Category = "Damage")
+	URadialForceComponent* RadialForceComponentCharge;
 
 	// Functions //
 
@@ -65,7 +66,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void PossessiveDashStart() override;
+	virtual void PossessiveDashCall() override;
 	virtual void ActionButton1() override;
 	virtual void ActionButton1End() override;
 
@@ -74,7 +75,7 @@ protected:
 	virtual void OnPossessionOrSpecialPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	void ChangeControlledCharacter(AHallowburgePlayerController* PlayerController, APossessableCharacter* PossessedCharacter);
-	
+	UFUNCTION(BlueprintCallable, Category = "Ghost")
 	void PossessiveDashEnd();
 	
 	void Punch();
@@ -88,8 +89,14 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Ghost")
 	void PlayPunchMontage(EPunchState CurrentPunchState);
 
+	UFUNCTION(BlueprintNativeEvent, Category = "Ghost")
+	void PlayDashMontage();
+
+	UFUNCTION(BlueprintCallable, Category = "Ghost")
+	void EnablePossessionFunctionality();
+
 	UFUNCTION()
-	void DamageOtherActor(AActor* OtherActor);
+	void DamageOtherActor(AActor* OtherActor, UPrimitiveComponent* OverlappedComp);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

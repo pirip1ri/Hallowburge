@@ -37,15 +37,22 @@ AGhostPlayerCharacter::AGhostPlayerCharacter()
 
 
 	// Initialize the RadialForceComponent
-	RadialForceComponent = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComponent"));
-	RadialForceComponent->SetupAttachment(RightHandCollisionBox);
+	RadialForceComponentFist = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComponentFist"));
+	RadialForceComponentFist->SetupAttachment(RightHandCollisionBox);
 	// Check if RadialForceComponent was successfully created before using it
-	if (RadialForceComponent)
+	if (RadialForceComponentFist)
 	{
-		RadialForceComponent->bIgnoreOwningActor = true;
-		RadialForceComponent->bImpulseVelChange = true;
+		RadialForceComponentFist->bIgnoreOwningActor = true;
+		RadialForceComponentFist->bImpulseVelChange = true;
 	}
 
+	RadialForceComponentCharge = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComponentCharge"));
+	RadialForceComponentCharge->SetupAttachment(PossessionCapsule);
+	if (RadialForceComponentCharge)
+	{
+		RadialForceComponentCharge->bIgnoreOwningActor = true;
+		RadialForceComponentCharge->bImpulseVelChange = true;
+	}
 
 	PunchCooldown = FMath::Clamp(PunchCooldown, 0.0f, 0.7f);
 }
@@ -102,15 +109,11 @@ void AGhostPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
-void AGhostPlayerCharacter::PossessiveDashStart()
+void AGhostPlayerCharacter::PossessiveDashCall()
 {
 	if (PunchState == EPunchState::Idle || PunchState == EPunchState::Cooldown) // if the player is not punching
 	{
-		PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		bCanPossess = true;
-		bIsHoldingDownPunchButton = false;
-		DashMovement(1);
-		GetWorld()->GetTimerManager().SetTimer(PossessionProgressTimerHandle, this, &AGhostPlayerCharacter::PossessiveDashEnd, 0.3f, false); // Check possession progress periodically
+		PlayDashMontage();
 	}
 }
 
@@ -163,7 +166,7 @@ void AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap(UPrimitiveComponen
 	{
 		if (bIsHoldingDownPunchButton)
 		{
-			DamageOtherActor(OtherActor);
+			DamageOtherActor(OtherActor, OverlappedComp);
 		}
 
 		else if (bCanPossess)
@@ -171,9 +174,6 @@ void AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap(UPrimitiveComponen
 			// Step 1: Check if the ghost Can Possess
 
 			// Step 2: Possess Target
-			// Check if the OtherActor is valid and is not this GhostPlayerCharacter
-
-			GetWorld()->GetTimerManager().ClearTimer(PossessionProgressTimerHandle);
 			PossessiveDashEnd(); // set the bCanPossess boolean immediately to false
 
 
@@ -281,7 +281,7 @@ void AGhostPlayerCharacter::OnPunchOverlap(UPrimitiveComponent* OverlappedComp, 
 	if (OtherActor && OtherActor != this)
 	{
 		UE_LOG(LogTemp, Display, TEXT("AGhostPlayerCharacter::OnPunchOverlap 2"));
-		DamageOtherActor(OtherActor);
+		DamageOtherActor(OtherActor, OverlappedComp);
 	}
 }
 
@@ -292,7 +292,20 @@ void AGhostPlayerCharacter::EndPunch()
 	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AGhostPlayerCharacter::DamageOtherActor(AActor* OtherActor)
+void AGhostPlayerCharacter::PlayDashMontage_Implementation()
+{
+
+}
+
+void AGhostPlayerCharacter::EnablePossessionFunctionality()
+{
+	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	bCanPossess = true;
+	bIsHoldingDownPunchButton = false;
+	DashMovement(1);
+}
+
+void AGhostPlayerCharacter::DamageOtherActor(AActor* OtherActor, UPrimitiveComponent* OverlappedComp)
 {
 	if (OtherActor)
 	{
@@ -300,18 +313,30 @@ void AGhostPlayerCharacter::DamageOtherActor(AActor* OtherActor)
 		UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
 		if (HealthComponent)
 		{
-			HealthComponent->HandleCollisionDamage(OtherActor, BaseDamage, GetController(), this);  // Ensure this function handles nulls correctly
+			HealthComponent->HandleCollisionDamage(OtherActor, BaseDamage, GetController(), this);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("DamageOtherActor: No HealthComponent found on %s"), *OtherActor->GetName());
 		}
 	}
-	// Set the strength of the radial impulse
-	RadialForceComponent->ImpulseStrength = RadialForceStrength;
+	if (OverlappedComp == RightHandCollisionBox)
+	{
+		// Set the strength of the radial impulse
+		RadialForceComponentFist->ImpulseStrength = RadialForceStrength;
 
-	// Fire the radial impulse
-	RadialForceComponent->FireImpulse();
+		// Fire the radial impulse
+		RadialForceComponentFist->FireImpulse();
+	}
+	else
+	{
+		// Set the strength of the radial impulse
+		RadialForceComponentCharge->ImpulseStrength = RadialForceStrength;
+
+		// Fire the radial impulse
+		RadialForceComponentCharge->FireImpulse();
+	}
+
 }
 
 void AGhostPlayerCharacter::PlayPunchMontage_Implementation(EPunchState CurrentPunchState)
