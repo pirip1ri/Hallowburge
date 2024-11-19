@@ -105,4 +105,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Possession")
 	void OnUnpossessCharacterInScene(APossessableCharacter* PossessedCharacter);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Possession")
+	void PlayStunMontage();
 };

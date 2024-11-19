@@ -61,6 +61,8 @@ public:
 	float MinProjectileSpeed = 2000.0f; // Speed at minimum charge
 	UPROPERTY(EditAnywhere, Category = "Astronaut")
 	float MaxProjectileSpeed = 5000.0f; // Speed at maximum charge
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsHoldingGun;
 
 
 
@@ -69,9 +71,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Astronaut")
 	float ProjectileSpawnerCooldown = 0.3f;
 
-private:
-	bool bCanShoot = true;
+	UPROPERTY(BlueprintReadWrite, Category = "Astronaut")
+	bool bCanShoot;
 	EChargingShotState ChargingState = EChargingShotState::Idle;
+	UPROPERTY(BlueprintReadWrite)
 	FTimerHandle ShootingCooldownTimerHandle;
 
 
@@ -94,6 +97,12 @@ protected:
 	// Sets default values for this character's properties
 	AAstronautPlayerCharacter();
 
+	UFUNCTION(BlueprintCallable)
+	void TriggerDrawGun();
+	UFUNCTION(BlueprintNativeEvent)
+	void DrawGunAnimation();
+	UFUNCTION(BlueprintNativeEvent)
+	void ShootAnimation();
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
 	void ResetShootingCooldown();

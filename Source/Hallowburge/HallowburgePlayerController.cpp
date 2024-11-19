@@ -9,7 +9,6 @@
 void AHallowburgePlayerController::BeginPlay()
 {
     Super::BeginPlay();
-
     // Ensure the character is valid and get the character movement component
     if (APawn* ControlledPawn = GetPawn())
     {

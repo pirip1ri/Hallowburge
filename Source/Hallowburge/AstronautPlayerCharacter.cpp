@@ -16,6 +16,13 @@ AAstronautPlayerCharacter::AAstronautPlayerCharacter()
     ProjectileSpawner = CreateDefaultSubobject<UProjectileSpawner>(TEXT("ProjectileSpawner"));
     ProjectileSpawner->SetupAttachment(RootComponent);
 
+    bIsHoldingGun = false;
+    bCanShoot = false;
+}
+
+void AAstronautPlayerCharacter::TriggerDrawGun()
+{
+    DrawGunAnimation();
 }
 
 // Called when the game starts or when spawned
@@ -63,7 +70,15 @@ void AAstronautPlayerCharacter::Tick(float DeltaTime)
     switch (ChargingState)
     {
     case EChargingShotState::Charging:
-        ChargeTime += DeltaTime;
+        if (bCanShoot)
+        {
+            ChargeTime += DeltaTime;
+        }
+        else
+        {
+            ChargeTime = 0.0f;
+            ChargingState = EChargingShotState::Idle;
+        }
         break;
 
     case EChargingShotState::Cooldown:
@@ -89,13 +104,21 @@ void AAstronautPlayerCharacter::Tick(float DeltaTime)
     }
 }
 
+void AAstronautPlayerCharacter::DrawGunAnimation_Implementation()
+{
+
+}
+
+void AAstronautPlayerCharacter::ShootAnimation_Implementation()
+{
+}
+
 void AAstronautPlayerCharacter::Shoot()
 {
     if (bCanShoot && ProjectileSpawner)
     {
         float ProjectileSpeed = FMath::GetMappedRangeValueClamped(FVector2D(MinChargeTime, MaxChargeTime), FVector2D(MinProjectileSpeed, MaxProjectileSpeed), ChargeTime);
         ProjectileSpawner->SpawnProjectile(ShootingProjectile, ProjectileSpeed);
-        //UE_LOG(LogTemp, Display, TEXT("Projectile Speed: %f"), ProjectileSpeed);
 
         // Start cooldown before next shot can be fired
         bCanShoot = false;
@@ -160,17 +183,26 @@ void AAstronautPlayerCharacter::SetStateToActive()
 
 void AAstronautPlayerCharacter::ActionButton1()
 {
-    ChargingState = EChargingShotState::Charging;
+    if (!bIsHoldingGun)
+    {
+        TriggerDrawGun();
+        bIsHoldingGun = true;
+    }
+    else
+    {
+        ChargingState = EChargingShotState::Charging;
+    }
 }
 
 void AAstronautPlayerCharacter::ActionButton1End()
 {
+    UE_LOG(LogTemp, Display, TEXT("AAstronautPlayerCharacter::ActionButton1End called for"));
     ChargingState = EChargingShotState::Cooldown;
 
     // Clamp the charge time between min and max
     ChargeTime = FMath::Clamp(ChargeTime, MinChargeTime, MaxChargeTime);
 
-    Shoot();
+    ShootAnimation();
 }
 
 void AAstronautPlayerCharacter::JetpackActive()

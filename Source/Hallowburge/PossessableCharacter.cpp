@@ -90,7 +90,8 @@ void APossessableCharacter::JumpFunctionEnd()
 
 void APossessableCharacter::PossessiveDashCall()
 {
-	if (GhostCharacter)
+    UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::PossessiveDashCall()"));
+    if (GhostCharacter)
 	{
 		// Get the player controller - should work for our single player game
 		AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
@@ -118,8 +119,6 @@ void APossessableCharacter::PossessiveDashCall()
             PlayerController->SwitchInputMappingContext(GhostCharacter, 0);     // Switch input mapping back to ghost character
             
             GhostCharacter->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // Detach ghost player from possessed character
-
-
             OnUnpossessCharacterInScene(GhostCharacter);
         }
         GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -128,6 +127,9 @@ void APossessableCharacter::PossessiveDashCall()
 
 	    GhostCharacter->SetActorHiddenInGame(false);    // Return the ghost to visibility and enable its collision
 	    GhostCharacter->SetActorEnableCollision(true);
+        
+        GhostCharacter->PlayUnpossessMontage();
+        this->PlayStunMontage();
 
 	    GhostCharacter = nullptr;   // Clear the GhostCharacter reference so that this if statement won't happen again unless someone is possessed
 	}
@@ -136,6 +138,10 @@ void APossessableCharacter::PossessiveDashCall()
 void APossessableCharacter::OnPossessionOrSpecialPunchOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     UE_LOG(LogTemp, Display, TEXT("APossessableCharacter::ChangePlayerCharacter called for"));
+}
+
+void APossessableCharacter::PlayStunMontage_Implementation()
+{
 }
 
 void APossessableCharacter::OnPossessCharacterInScene_Implementation(APossessableCharacter* PossessedCharacter, AHallowburgePlayerController* PlayerController)

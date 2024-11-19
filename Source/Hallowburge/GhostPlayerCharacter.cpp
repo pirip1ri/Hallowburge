@@ -297,6 +297,11 @@ void AGhostPlayerCharacter::PlayDashMontage_Implementation()
 
 }
 
+void AGhostPlayerCharacter::PlayUnpossessMontage_Implementation()
+{
+
+}
+
 void AGhostPlayerCharacter::EnablePossessionFunctionality()
 {
 	PossessionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
