@@ -4,6 +4,8 @@
 #include "PossessableCharacter.h"
 #include "HallowburgePlayerController.h"
 #include "GameFramework/Actor.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "GhostPlayerCharacter.h"
 
 APossessableCharacter::APossessableCharacter()
@@ -12,6 +14,17 @@ APossessableCharacter::APossessableCharacter()
     bUseControllerRotationYaw = true;
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
+
+    // Create a Spring Arm component and attach it to the character's root component
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(RootComponent);
+    SpringArm->TargetArmLength = 300.0f;
+    SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+
+    // Create a Camera component and attach it to the Spring Arm
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+    Camera->bUsePawnControlRotation = true;
 }
 
 // Called when the game starts or when spawned

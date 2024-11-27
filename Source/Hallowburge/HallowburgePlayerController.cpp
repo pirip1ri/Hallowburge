@@ -4,21 +4,12 @@
 #include "HallowburgePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputMappingContext.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include <Kismet/GameplayStatics.h>
 
 void AHallowburgePlayerController::BeginPlay()
 {
     Super::BeginPlay();
-
-    if (CameraComponent)
-    {
-        FViewTargetTransitionParams TransitionParams;
-        SetViewTarget(this, TransitionParams);
-        UE_LOG(LogTemp, Warning, TEXT("CameraComponent is active!"));
-    }
-    
+ 
     // Ensure the character is valid and get the character movement component
     if (APawn* ControlledPawn = GetPawn())
     {
@@ -52,46 +43,7 @@ void AHallowburgePlayerController::Tick(float DeltaTime)
 
 AHallowburgePlayerController::AHallowburgePlayerController()
 {
-    // Create Root Component
-    USceneComponent* RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-    RootComponent = RootSceneComponent;
-
-    // Create Spring Arm
-    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 500.0f; // Set a larger default arm length
-    SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f)); // Raise the spring arm above the root
-    SpringArm->bUsePawnControlRotation = true;
-
-    // Create Camera
-    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    CameraComponent->SetupAttachment(SpringArm);
-    CameraComponent->bUsePawnControlRotation = false;
-
-    SpringArm->bHiddenInGame = false;
-    CameraComponent->bHiddenInGame = false;
-}
-
-void AHallowburgePlayerController::OnPossess(APawn* InPawn)
-{
-    Super::OnPossess(InPawn);
-    if (SpringArm)
-    {
-        // Attach the spring arm to the possessed pawn
-        SpringArm->AttachToComponent(InPawn->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-        SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f)); // Adjust based on your game
-        UE_LOG(LogTemp, Display, TEXT("yoyoyoy"));
-    }
-}
-
-void AHallowburgePlayerController::OnUnPossess()
-{
-    Super::OnUnPossess();
-
-    // Reset spring arm to default position
-    SpringArm->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-    UE_LOG(LogTemp, Display, TEXT("oyoyoy"));
-
+    
 }
 
 void AHallowburgePlayerController::SwitchInputMappingContext_Implementation(APossessableCharacter* NewPossessedCharacter, int Priority)

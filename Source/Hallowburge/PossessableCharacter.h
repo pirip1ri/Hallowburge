@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "PossessableCharacter.generated.h"
 
 
@@ -29,6 +31,12 @@ class HALLOWBURGE_API APossessableCharacter : public ACharacter
 
 	// Parameters //
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* Camera;
+
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 	EPlayerPawn PlayerPawn;
 	
