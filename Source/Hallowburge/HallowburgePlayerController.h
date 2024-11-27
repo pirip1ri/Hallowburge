@@ -17,6 +17,9 @@ enum class EPlayersCurrentPlayState : uint8
 	Dead	UMETA(DisplayName = "Dead")
 };
 
+// Forward declarations
+class USpringArmComponent;
+class UCameraComponent;
 
 UCLASS()
 class HALLOWBURGE_API AHallowburgePlayerController : public APlayerController
@@ -26,6 +29,10 @@ class HALLOWBURGE_API AHallowburgePlayerController : public APlayerController
 	
 	// Universal Parameters //
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* SpringArm;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* CameraComponent;
 
 	AHallowburgeSandboxGameModeBase* GameModeRef;
 	APossessableCharacter* PlayerCharacter = Cast<APossessableCharacter>(GetCharacter());
@@ -57,6 +64,14 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	AHallowburgePlayerController();
+
+	// Called when the controller possesses a pawn
+	virtual void OnPossess(APawn* InPawn) override;
+
+	// Called when the controller unpossesses a pawn
+	virtual void OnUnPossess() override;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Input")
 	void SwitchInputMappingContext(APossessableCharacter* NewPossessedCharacter, int Priority);
