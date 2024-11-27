@@ -22,11 +22,20 @@ public:
 	UFUNCTION()
 	void HandleCollisionDamage(AActor* CollidedActor, float Damage, AController* Controller, AActor* OffenseActor);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health", meta = (ClampMin = "0.0"))
 	float MaxHealth;
 
 	UPROPERTY(BlueprintReadOnly)
 	float CurrentHealth;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage", meta = (ClampMin = "0"))
+	int AttackTokenCount;
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	bool ReserveAttackToken(int Amount);
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void ReturnAttackToken(int Amount);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

@@ -14,6 +14,7 @@ enum class EJetpackState : uint8
 {
 	Idle        UMETA(DisplayName = "Idle"),         // No activity
 	Active      UMETA(DisplayName = "Active"),		 // Jetpack is being used
+	Paused       UMETA(DisplayName = "Paused"),       // Jetpack is paused while falling
 	Empty		UMETA(DisplayName = "Empty"),		 // No more fuel
 	Regenerating UMETA(DisplayName = "Regenerating") // Jetpack fuel is regenerating
 };
@@ -97,8 +98,6 @@ protected:
 	// Sets default values for this character's properties
 	AAstronautPlayerCharacter();
 
-	UFUNCTION(BlueprintCallable)
-	void TriggerDrawGun();
 	UFUNCTION(BlueprintNativeEvent)
 	void DrawGunAnimation();
 	UFUNCTION(BlueprintNativeEvent)
@@ -107,6 +106,10 @@ protected:
 	void Shoot();
 	void ResetShootingCooldown();
 public:	
+	UFUNCTION(BlueprintCallable)
+	void TriggerDrawGun();
+
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

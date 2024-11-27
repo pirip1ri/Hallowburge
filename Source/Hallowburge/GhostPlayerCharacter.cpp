@@ -172,7 +172,7 @@ void AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap(UPrimitiveComponen
 		else if (bCanPossess)
 		{
 			// Step 1: Check if the ghost Can Possess
-
+			UE_LOG(LogTemp, Display, TEXT("AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap Possession"));
 			// Step 2: Possess Target
 			PossessiveDashEnd(); // set the bCanPossess boolean immediately to false
 
@@ -185,7 +185,11 @@ void AGhostPlayerCharacter::OnPossessionOrSpecialPunchOverlap(UPrimitiveComponen
 
 				// Get the player controller - should work for our single player game
 				AHallowburgePlayerController* PlayerController = Cast<AHallowburgePlayerController>(GetWorld()->GetFirstPlayerController());
-
+				AAIController* AIController = Cast<AAIController>(PossessableCharacter->GetController());
+				if (AIController)
+				{
+					AIController->ClearFocus(EAIFocusPriority::Gameplay);
+				}
 
 				if (PlayerController)
 				{
@@ -318,6 +322,7 @@ void AGhostPlayerCharacter::DamageOtherActor(AActor* OtherActor, UPrimitiveCompo
 		UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
 		if (HealthComponent)
 		{
+			UE_LOG(LogTemp, Log, TEXT("Handle Damage on: %s"), *OtherActor->GetName());
 			HealthComponent->HandleCollisionDamage(OtherActor, BaseDamage, GetController(), this);
 		}
 		else

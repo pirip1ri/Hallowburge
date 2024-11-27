@@ -35,7 +35,7 @@ void AAstronautPlayerCharacter::BeginPlay()
     }
 
     // Allows the character to move easily in the air while jumping
-    GetCharacterMovement()->AirControl = 0.8f;
+    GetCharacterMovement()->AirControl = 0.5f;
 
     GameModeRef = Cast<AHallowburgeSandboxGameModeBase>(GetWorld()->GetAuthGameMode());
 }
@@ -51,7 +51,13 @@ void AAstronautPlayerCharacter::Tick(float DeltaTime)
     case EJetpackState::Active:
         ConsumeJetpackFuel(DeltaTime);
         break;
-
+    case EJetpackState::Paused:
+        // Transition back to Regenerating when grounded
+        if (GetCharacterMovement() && !GetCharacterMovement()->IsFalling())
+        {
+            JetpackState = EJetpackState::Regenerating;
+        }
+        break;
     case EJetpackState::Regenerating:
         RefuelJetpack(DeltaTime);
         break;
@@ -145,9 +151,17 @@ void AAstronautPlayerCharacter::JumpFunction()
         switch (JetpackState)
         {
         case EJetpackState::Empty:
+        case EJetpackState::Regenerating:
             // Jetpack is empty, fallback to normal jump behavior
             Jump();
             break;
+
+        case EJetpackState::Paused:
+            // Resume jetpack only if fuel is available
+            if (CurrentJetpackFuel > 0)
+            {
+                JetpackActive();
+            }
 
         default:
             // Jetpack is ready to use!
@@ -207,6 +221,12 @@ void AAstronautPlayerCharacter::ActionButton1End()
 
 void AAstronautPlayerCharacter::JetpackActive()
 {
+    if (JetpackState == EJetpackState::Regenerating || JetpackState == EJetpackState::Empty)
+    {
+        // Jetpack cannot be used while regenerating or empty
+        return;
+    }
+
     if (GetCharacterMovement() && CurrentJetpackFuel > 0)
     {
         JetpackState = EJetpackState::Active; // Set to active to consume fuel
@@ -224,8 +244,14 @@ void AAstronautPlayerCharacter::JetpackDeactivate()
         // Return gravity to normal
         GetCharacterMovement()->GravityScale = 1.0f;
 
-        // Switch back to Idle state when jetpack is deactivated
-        JetpackState = EJetpackState::Regenerating; // was originally idle
+        if (GetCharacterMovement()->IsFalling() && JetpackState == EJetpackState::Active)
+        {
+            JetpackState = EJetpackState::Paused;
+        }
+        else
+        {
+            JetpackState = EJetpackState::Regenerating;
+        }
     }
 }
 

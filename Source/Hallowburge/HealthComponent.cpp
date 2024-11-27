@@ -12,15 +12,47 @@ UHealthComponent::UHealthComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
+	// Initialize default values
+	MaxHealth = 3.0f;
 	CurrentHealth = MaxHealth;
+	AttackTokenCount = 2; // Example default value
 }
 
+
+bool UHealthComponent::ReserveAttackToken(int Amount)
+{
+	if (AttackTokenCount >= Amount)
+	{
+		AttackTokenCount -= Amount;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void UHealthComponent::ReturnAttackToken(int Amount)
+{
+	AttackTokenCount += Amount;
+}
 
 // Called when the game starts
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentHealth = MaxHealth;
+	if (CurrentHealth <= 0) // Ensure CurrentHealth is valid
+	{
+		UE_LOG(LogTemp, Display, TEXT("UHealthComponent - Maximum Health has not set up properly for a character."));
+		CurrentHealth = 3;
+	}
+
+	if (AttackTokenCount <= 0) // Set a minimum valid value
+	{
+		UE_LOG(LogTemp, Display, TEXT("UHealthComponent - AttackTokenCount has not been set up properly for a character."));
+		AttackTokenCount = 2; // Example default
+	}
 
 }
 
