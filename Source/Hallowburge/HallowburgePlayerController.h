@@ -26,7 +26,8 @@ class HALLOWBURGE_API AHallowburgePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-	
+	const float DeadZoneThreshold = 0.1f; // 10% threshold
+
 	// Universal Parameters //
 public:
 	AHallowburgeSandboxGameModeBase* GameModeRef;

@@ -60,19 +60,25 @@ void AHallowburgePlayerController::SetupInputComponent()
 
 void AHallowburgePlayerController::LookUp(const float& InputValue)
 {
-	AddPitchInput(InputValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+    if (FMath::Abs(InputValue) > DeadZoneThreshold) // Ignore small values
+    {
+        AddPitchInput(InputValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+    }
 }
 
 void AHallowburgePlayerController::Turn(const float& InputValue)
 {
-	AddYawInput(InputValue * BaseLookRightRate * GetWorld()->GetDeltaSeconds());
+    if (FMath::Abs(InputValue) > DeadZoneThreshold) // Ignore small values
+    {
+        AddYawInput(InputValue * BaseLookRightRate * GetWorld()->GetDeltaSeconds());
+    }
 }
 
 void AHallowburgePlayerController::MoveRight(const float& InputValue)
 {
-    if (APawn* ControlledPawn = GetPawn())
+    if (FMath::Abs(InputValue) > DeadZoneThreshold) // Ignore small values
     {
-        if (InputValue != 0.0f)
+        if (APawn* ControlledPawn = GetPawn())
         {
             const FRotator Rotation = ControlledPawn->GetControlRotation();
             const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -85,9 +91,9 @@ void AHallowburgePlayerController::MoveRight(const float& InputValue)
 
 void AHallowburgePlayerController::MoveForward(const float& InputValue)
 {
-        if (APawn* ControlledPawn = GetPawn())
+    if (FMath::Abs(InputValue) > DeadZoneThreshold) // Ignore small values
     {
-        if (InputValue != 0.0f)
+        if (APawn* ControlledPawn = GetPawn())
         {
             const FRotator Rotation = ControlledPawn->GetControlRotation();
             const FRotator YawRotation(0, Rotation.Yaw, 0);
