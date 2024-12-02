@@ -49,6 +49,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	float CharacterSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float MaxWalkSpeed = 600.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

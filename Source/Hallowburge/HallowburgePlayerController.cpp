@@ -124,7 +124,7 @@ void AHallowburgePlayerController::SprintStart()
 {
     if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
     {
-        PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed += 300.0f;
     }
     else
     {
@@ -136,7 +136,7 @@ void AHallowburgePlayerController::SprintEnd()
 {
     if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
     {
-        PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+        PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed -= 300.0f;
     }
     else
     {

@@ -40,8 +40,6 @@ public:
 
 protected:
 
-	float RunSpeed = 600.0f;
-	float SprintSpeed = 900.0f;
 	float MaxWalkSpeed;
 
 	/** Base lookup rate, in deg/sec. Other scaling may affect final lookup rate. */
