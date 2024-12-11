@@ -50,7 +50,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float DestinationDistanceFromSelf;
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* GunMesh;
 	UPROPERTY(EditAnywhere, Category = "Astronaut")
 	TSubclassOf<AShootingProjectile> ShootingProjectile;
 	UPROPERTY(EditAnywhere, Category = "Astronaut")
@@ -121,6 +122,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetStateToActive();
+	UFUNCTION(BlueprintNativeEvent)
+	void ActivateJetpackNiagraEffects();
+	UFUNCTION(BlueprintNativeEvent)
+	void DeactivateJetpackNiagraEffects();
 
 	virtual void ActionButton1() override;
 	virtual void ActionButton1End() override;

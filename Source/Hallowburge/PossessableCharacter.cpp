@@ -18,7 +18,8 @@ APossessableCharacter::APossessableCharacter()
     // Create a Spring Arm component and attach it to the character's root component
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 300.0f;
+    SpringArm->TargetArmLength = 400.0f;
+    SpringArm->SetRelativeLocation(FVector(-50.0f, 0.0f, 0.0f));
     SpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
     // Create a Camera component and attach it to the Spring Arm

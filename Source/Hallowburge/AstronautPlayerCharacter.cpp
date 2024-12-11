@@ -11,13 +11,23 @@ AAstronautPlayerCharacter::AAstronautPlayerCharacter()
 {
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+    bIsHoldingGun = false;
+    bCanShoot = false;
+
+    // Create a skeletal mesh component for the gun
+    GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
+    GunMesh->SetupAttachment(GetMesh(), TEXT("RightHandSocket")); // Attach to the right hand socket of the character's skeletal mesh
 
     // Initialize the projectile spawner component and attach it to the root
     ProjectileSpawner = CreateDefaultSubobject<UProjectileSpawner>(TEXT("ProjectileSpawner"));
-    ProjectileSpawner->SetupAttachment(RootComponent);
+    ProjectileSpawner->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
-    bIsHoldingGun = false;
-    bCanShoot = false;
+    // Set the skeletal mesh asset for the gun
+    static ConstructorHelpers::FObjectFinder<USkeletalMesh> GunMeshAsset(TEXT("SkeletalMesh'/Game/Path/To/Your/GunMesh.GunMesh'"));
+    if (GunMeshAsset.Succeeded())
+    {
+        GunMesh->SetSkeletalMesh(GunMeshAsset.Object);
+    }
 }
 
 void AAstronautPlayerCharacter::TriggerDrawGun()
@@ -151,9 +161,20 @@ void AAstronautPlayerCharacter::JumpFunction()
         switch (JetpackState)
         {
         case EJetpackState::Empty:
-        case EJetpackState::Regenerating:
             // Jetpack is empty, fallback to normal jump behavior
             Jump();
+            break;
+
+        case EJetpackState::Regenerating:
+            if (CurrentJetpackFuel >= RefuelJetpackRate)
+            {
+                JetpackActive();
+                ActivateJetpackNiagraEffects();
+            }
+            else
+            {
+                Jump();
+            }
             break;
 
         case EJetpackState::Paused:
@@ -161,10 +182,17 @@ void AAstronautPlayerCharacter::JumpFunction()
             if (CurrentJetpackFuel > 0)
             {
                 JetpackActive();
+                ActivateJetpackNiagraEffects();
             }
+            break;
+
+        case EJetpackState::Idle:
+            // Jetpack is ready to use!
+            ActivateJetpackNiagraEffects();
+            JetpackActive();
+            break;
 
         default:
-            // Jetpack is ready to use!
             JetpackActive();
             break;
         }
@@ -187,12 +215,21 @@ void AAstronautPlayerCharacter::JumpFunctionEnd()
         // Stop the regular jump if jetpack isn't active
         StopJumping();
     }
+    DeactivateJetpackNiagraEffects();
 }
 
 void AAstronautPlayerCharacter::SetStateToActive()
 {
     JetpackActive();
     bIsAITryingToJump = true;
+}
+
+void AAstronautPlayerCharacter::ActivateJetpackNiagraEffects_Implementation()
+{
+}
+
+void AAstronautPlayerCharacter::DeactivateJetpackNiagraEffects_Implementation()
+{
 }
 
 void AAstronautPlayerCharacter::ActionButton1()
@@ -221,7 +258,7 @@ void AAstronautPlayerCharacter::ActionButton1End()
 
 void AAstronautPlayerCharacter::JetpackActive()
 {
-    if (JetpackState == EJetpackState::Regenerating || JetpackState == EJetpackState::Empty)
+    if (JetpackState == EJetpackState::Empty)
     {
         // Jetpack cannot be used while regenerating or empty
         return;
@@ -253,6 +290,7 @@ void AAstronautPlayerCharacter::JetpackDeactivate()
             JetpackState = EJetpackState::Regenerating;
         }
     }
+    DeactivateJetpackNiagraEffects();
 }
 
 void AAstronautPlayerCharacter::ConsumeJetpackFuel(float DeltaTime)
@@ -265,6 +303,7 @@ void AAstronautPlayerCharacter::ConsumeJetpackFuel(float DeltaTime)
     {
         CurrentJetpackFuel = 0;
         JetpackState = EJetpackState::Empty;
+        DeactivateJetpackNiagraEffects();
     }
 }
 
